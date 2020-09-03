@@ -1,13 +1,13 @@
 publiccodeYmlVersion: "0.2"
 
-name: pc
+name: chis
 applicationSuite: commonground
 url: "https://github.com/ConductionNL/proto-component"
-landingURL: "pc.zaakonline.nl" 
+landingURL: "chis.zaakonline.nl" 
 isBasedOn: "https://github.com/ConductionNL/Proto-component-commonground.git" 
 softwareVersion: "V1.0"
-releaseDate: "2020-23-07"
-logo: pc.zaakonline.nl 
+releaseDate: "2020-03-09"
+logo: chis.zaakonline.nl 
 monochromeLogo: img/logo-mono.svg
 
 inputTypes:
@@ -67,7 +67,7 @@ description:
 #          is and why one should need it.
 
     documentation: "https://github.com/ConductionNL/proto-component/blob/master/README.md"
-    apiDocumentation: "pc.zaakonline.nl"
+    apiDocumentation: "chis.zaakonline.nl"
 #
 #    features:
 #       - Very important feature
