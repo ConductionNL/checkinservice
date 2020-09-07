@@ -10,12 +10,12 @@ settings:
   version: V1.0
   majorVersion: v1
   id: 
-  description: '&#039;Naast deze JSON rest API is er ook een [graphql](/graphql) interface beschikbaar.&#039;'
+  description: 'Naast deze JSON rest API is er ook een [graphql](/graphql) interface beschikbaar.'
   type: component
   repro: https://github.com/ConductionNL/proto-component
   demo: chis.zaakonline.nl
   container: https://hub.docker.com/repository/docker/conduction/chis-php
-  domain: conduction.nl
+  domain: zuid-drecht.nl
   subdomain: chis
   subpath: chis
   organisationName: Conduction
