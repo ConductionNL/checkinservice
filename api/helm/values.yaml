@@ -12,8 +12,8 @@ settings:
   id: 
   description: 'Naast deze JSON rest API is er ook een [graphql](/graphql) interface beschikbaar.'
   type: component
-  repro: https://github.com/ConductionNL/proto-component
-  demo: chis.zaakonline.nl
+  repro: https://github.com/ConductionNL/checkinservice
+  demo: chis.zuid-drecht.nl
   container: https://hub.docker.com/repository/docker/conduction/chis-php
   domain: zuid-drecht.nl
   subdomain: chis

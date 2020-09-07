@@ -2,8 +2,8 @@ publiccodeYmlVersion: "0.2"
 
 name: chis
 applicationSuite: commonground
-url: "https://github.com/ConductionNL/proto-component"
-landingURL: "chis.zaakonline.nl" 
+url: "https://github.com/ConductionNL/checkinservice"
+landingURL: "chis.zuid-drecht.nl" 
 isBasedOn: "https://github.com/ConductionNL/Proto-component-commonground.git" 
 softwareVersion: "V1.0"
 releaseDate: "2020-07-09"
@@ -37,7 +37,7 @@ usedBy:
   - Gemeente Hoorn
   
 
-roadmap: "https://github.com/ConductionNL/proto-component/blob/master/ROADMAP.md"
+roadmap: "https://github.com/ConductionNL/checkinservice/blob/master/ROADMAP.md"
 
 developmentStatus: development
 
@@ -66,8 +66,8 @@ description:
 #          on multiple rows. You should note what the software
 #          is and why one should need it.
 
-    documentation: "https://github.com/ConductionNL/proto-component/blob/master/README.md"
-    apiDocumentation: "chis.zaakonline.nl"
+    documentation: "https://github.com/ConductionNL/checkinservice/blob/master/README.md"
+    apiDocumentation: "chis.zuid-drecht.nl"
 #
 #    features:
 #       - Very important feature

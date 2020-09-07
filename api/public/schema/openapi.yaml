@@ -8,7 +8,7 @@ info:
     - Reference: chis
     - Enviroment: dev
     - Version: V1.0
-    - Repository: [online](https://github.com/ConductionNL/proto-component) / [zip](https://github.com/ConductionNL/proto-component/archive/master.zip)
+    - Repository: [online](https://github.com/ConductionNL/checkinservice) / [zip](https://github.com/ConductionNL/checkinservice/archive/master.zip)
     - Docker Image: [online](https://hub.docker.com/repository/docker/conduction/chis-php) 
     - Datamodel: [postman](/schema/chis.postman_collection.json) / [oas](/schema/openapi.yaml) / [pdf](/schema/datamodel.pdf) / [modelio (zip)](/schema/Datamodel_Modelio.zip) 
     
@@ -3407,12 +3407,12 @@ definitions:
         description: 'The moment this request was created'
         type: string
         format: date-time
-        example: '2020-09-07 12:53:41'
+        example: '2020-09-07 13:07:30'
       dateModified:
         description: 'The moment this request last Modified'
         type: string
         format: date-time
-        example: '2020-09-07 12:53:41'
+        example: '2020-09-07 13:07:30'
     required: []
   ChangeLog-write:
     properties:
@@ -3526,12 +3526,12 @@ definitions:
         description: 'The moment this request was created'
         type: string
         format: date-time
-        example: '2020-09-07 12:53:41'
+        example: '2020-09-07 13:07:30'
       dateModified:
         description: 'The moment this request last Modified'
         type: string
         format: date-time
-        example: '2020-09-07 12:53:41'
+        example: '2020-09-07 13:07:30'
     required: []
   AuditTrail-write:
     properties:
