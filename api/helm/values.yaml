@@ -15,7 +15,7 @@ settings:
   repro: https://github.com/ConductionNL/proto-component
   demo: chis.zaakonline.nl
   container: https://hub.docker.com/repository/docker/conduction/chis-php
-  domain: conduction.nl
+  domain: zuid-drecht.nl
   subdomain: chis
   subpath: chis
   organisationName: Conduction
