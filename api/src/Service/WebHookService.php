@@ -38,23 +38,28 @@ class WebHookService
 
     public function checkRequestStatus(WebHook $webHook, $resource)
     {
+        $messages = [];
         if($resource['status'] == 'submitted') {
             // Get email message content
             $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-indiening"])['@id'];
 
+            // Create email message
+            $messages = $this->createMessages($content, $resource);
+
             // Create a user in UC
-            //$user['organization'] = ...;
-            //$user['username'] = ...;
-            //$user['password'] = ...;
-            //$user['person'] = ...;
-            //$user['userGroups'][0] = $this->commonGroundService->cleanUrl(['component' => 'uc', 'type' => 'groups'], ['id' => '4085d475-063b-47ed-98eb-0a7d8b01f3b7']);
-            //$this->commonGroundService->createResource($user, ['component' => 'uc', 'type' => 'users']);
+//            $user['organization'] = ...;
+//            $user['username'] = ...;
+//            $user['password'] = ...;
+//            $user['person'] = ...;
+//            $user['userGroups'][0] = $this->commonGroundService->cleanUrl(['component' => 'uc', 'type' => 'groups'], ['id' => '4085d475-063b-47ed-98eb-0a7d8b01f3b7']);
+//            $this->commonGroundService->createResource($user, ['component' => 'uc', 'type' => 'users']);
         } elseif ($resource['status'] == 'cancelled') {
             // Get email message content
             $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-annulering"])['@id'];
+
+            // Create email message
+            $messages = $this->createMessages($content, $resource);
         }
-        // Create email message
-        $messages = $this->createMessages($content, $resource);
 
         // Send email
         $result = [];
