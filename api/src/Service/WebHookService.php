@@ -22,86 +22,90 @@ class WebHookService
         $this->params = $params;
     }
 
-    public function webHook(WebHook $webHook)
+    public function handle(WebHook $webHook)
     {
-        if ($webHook->getTask() && $task = $this->commonGroundService->getResource($webHook->getTask())) {
-            $this->executeTask($task, $webHook);
-        } else {
-            $resource = $this->commonGroundService->getResource($webHook->getResource());
-            $results = [];
-            $results = array_merge($results, $this->checkRequestStatus($webHook, $resource));
-            $webHook->setResult($results);
+        $results = [];
+        $request = $this->commonGroundService->getResource($webHook->getRequest());
+
+        switch ($request['status'])
+        {
+            case 'submitted':
+                $results[] = $this->sendSubmittedEmail($webHook, $request);
+                $this->createUser($webHook, $request);
+                break;
+            case 'cancelled':
+                $results[] = $this->sendCancelledEmail($webHook, $request);
+                break;
         }
+        $webHook->setResult($results);
         $this->em->persist($webHook);
         $this->em->flush();
+
+        return $webHook;
     }
 
-    public function checkRequestStatus(WebHook $webHook, $resource)
+    public function sendSubmittedEmail($webHook, $request){
+        $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-indiening"])['@id'];
+        if(key_exists('contact_gegevens', $request['properties'])) {
+            $receiver = $request['properties']['contact_gegevens'];
+        } else {
+            return 'Geen ontvanger gevonden';
+        }
+        $message = $this->createMessage($request, $content, $receiver);
+
+        return $this->commonGroundService->createResource($message, ['component'=>'bs', 'type'=>'messages'])['@id'];
+    }
+
+    public function sendCancelledEmail($webHook, $request){
+        $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-annulering"])['@id'];
+        if(key_exists('contact_gegevens', $request['properties'])) {
+            $receiver = $request['properties']['contact_gegevens'];
+        } else {
+            return 'Geen ontvanger gevonden';
+        }
+        $message = $this->createMessage($request, $content, $receiver);
+
+        return $this->commonGroundService->createResource($message, ['component'=>'bs', 'type'=>'messages'])['@id'];
+    }
+
+    public function createUser($webHook, $request)
     {
-        $messages = [];
-        if($resource['status'] == 'submitted') {
-            // Get email message content
-            $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-indiening"])['@id'];
-
-            // Create email message
-            $messages = $this->createMessages($content, $resource);
-
-            // Create a user in UC
+        // Create a user in UC
 //            $user['organization'] = ...;
 //            $user['username'] = ...;
 //            $user['password'] = ...;
 //            $user['person'] = ...;
 //            $user['userGroups'][0] = $this->commonGroundService->cleanUrl(['component' => 'uc', 'type' => 'groups'], ['id' => '4085d475-063b-47ed-98eb-0a7d8b01f3b7']);
 //            $this->commonGroundService->createResource($user, ['component' => 'uc', 'type' => 'users']);
-        } elseif ($resource['status'] == 'cancelled') {
-            // Get email message content
-            $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-annulering"])['@id'];
-
-            // Create email message
-            $messages = $this->createMessages($content, $resource);
-        }
-
-        // Send email
-        $result = [];
-        foreach($messages as $message){
-            $result[] = $this->commonGroundService->createResource($message, ['component'=>'bs', 'type'=>'messages'])['@id'];
-        }
-
-        return $result;
     }
 
-    public function createMessages($content, $resource){
-        $messages = [];
-        $message['service'] = $this->commonGroundService->getResourceList(['component'=>'bs', 'type'=>'services'], "?type=mailer&organization={$resource['organization']}")['hydra:member'][0]['@id'];
+    public function createMessage(array $request, $content, $receiver, $attachments = null){
+        $application = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}"]);
+        if(key_exists('@id', $application['organization'])){
+            $serviceOrganization = $application['organization']['@id'];
+        } else {
+            $serviceOrganization = $request['organization'];
+        }
+
+        $message = [];
+        $message['service'] = $this->commonGroundService->getResourceList(['component'=>'bs', 'type'=>'services'], "?type=mailer&organization=$serviceOrganization")['hydra:member'][0]['@id'];
         $message['status'] = 'queued';
-        $organization = $this->commonGroundService->getResource($resource['organization']);
+        $organization = $this->commonGroundService->getResource($request['organization']);
 
         if ($organization['contact']) {
             $message['sender'] = $organization['contact'];
         }
-        $submitters = $resource['submitters'];
-        $message['content'] = $content;
-        foreach ($submitters as $submitter) {
-            if (key_exists('person', $submitter) && $submitter['person'] != null) {
-                $message['reciever'] = $this->commonGroundService->getResource($submitter['person']);
-                if (!key_exists('sender', $message)) {
-                    $message['sender'] = $message['reciever'];
-                }
-                $message['data'] = ['resource'=>$resource, 'contact'=>$message['reciever'], 'organization'=>$message['sender']];
-                $messages[] = $message;
-            }
+        $message['reciever'] = $receiver;
+        if (!key_exists('sender', $message)) {
+            $message['sender'] = $receiver;
         }
 
-        if (key_exists('contact_gegevens', $resource['properties'])) {
-            if ($resource['properties']['contact_gegevens'] = $this->commonGroundService->isResource($resource['properties']['contact_gegevens'])) {
-                $message['reciever'] = $resource['properties']['contact_gegevens'];
-                if (!key_exists('sender', $message)) {
-                    $message['sender'] = $message['reciever'];
-                }
-                $message['data'] = ['resource'=>$resource, 'sender'=>$organization, 'receiver'=>$this->commonGroundService->getResource($message['reciever'])];
-                $messages[] = $message;
-            }
+        $message['data'] = ['resource'=>$request, 'sender'=>$organization, 'receiver'=>$this->commonGroundService->getResource($message['reciever'])];
+        $message['content'] = $content;
+        if($attachments){
+            $message['attachments'] = $attachments;
         }
-        return $messages;
+
+        return $message;
     }
 }
