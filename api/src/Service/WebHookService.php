@@ -78,9 +78,10 @@ class WebHookService
 //            $this->commonGroundService->createResource($user, ['component' => 'uc', 'type' => 'users']);
     }
 
-    public function createMessage(array $request, $content, $receiver, $attachments = null){
+    public function createMessage(array $request, $content, $receiver, $attachments = null)
+    {
         $application = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}"]);
-        if(key_exists('@id', $application['organization'])){
+        if (key_exists('@id', $application['organization'])) {
             $serviceOrganization = $application['organization']['@id'];
         } else {
             $serviceOrganization = $request['organization'];
