@@ -127,12 +127,12 @@
 	],
 	"variable": [
 		{
-			"id": "8e6f5880-19e9-4eca-8795-d0716486eee3",
+			"id": "6cfe3bf1-a247-42bc-aa27-2a5cdd32971f",
 			"key": "baseUrl",
-			"value": "https:/chis.dev.zuid-drecht.nl"
+			"value": "https://dev.zuid-drecht.nl/api/v1/chis"
 		},
 		{
-			"id": "e640ea4e-acc4-405d-8ec1-94fdc0ee209f",
+			"id": "39cc578b-23a5-43ec-aee8-f9a2c0aa9329",
 			"key": "authorization",
 			"value": "45c1a4b6-59d3-4a6e-86bf-88a872f35845"
 		}
