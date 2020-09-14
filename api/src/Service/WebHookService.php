@@ -93,7 +93,8 @@ class WebHookService
         }
 
         if (key_exists('contact_gegevens', $resource['properties'])) {
-            if ($message['reciever'] = $this->commonGroundService->isResource($resource['properties']['contact_gegevens'])) {
+            if ($resource['properties']['contact_gegevens'] = $this->commonGroundService->isResource($resource['properties']['contact_gegevens'])) {
+                $message['reciever'] = $resource['properties']['contact_gegevens'];
                 if (!key_exists('sender', $message)) {
                     $message['sender'] = $message['reciever'];
                 }

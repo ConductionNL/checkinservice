@@ -3,7 +3,7 @@ entries:
   chis:
   - apiVersion: v1
     appVersion: V1.0
-    created: "2020-09-11T14:14:21.077188254Z"
+    created: "2020-09-14T07:25:56.884122195Z"
     description: Naast deze JSON rest API is er ook een [graphql](/graphql) interface
       beschikbaar.
     digest: 23373958dc8faf56b8143f49358938a0e1643c409cf82cd43d9e3ada8b75dd73
@@ -16,7 +16,7 @@ entries:
   pc:
   - apiVersion: v1
     appVersion: V1.0
-    created: "2020-09-11T14:14:21.081342354Z"
+    created: "2020-09-14T07:25:56.910259199Z"
     description: '&#039;Naast deze JSON rest API is er ook een [graphql](/graphql)
       interface beschikbaar.&#039;'
     digest: 0f73581af9d37df8fc08426499f42f168a0241b59c5ecafdb6b8133c884a1971
@@ -26,4 +26,4 @@ entries:
     urls:
     - pc-0.1.0.tgz
     version: 0.1.0
-generated: "2020-09-11T14:14:21.073526354Z"
+generated: "2020-09-14T07:25:56.867416893Z"
