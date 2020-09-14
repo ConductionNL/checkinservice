@@ -1,0 +1,141 @@
+{
+	"info": {
+		"_postman_id": "011f209c-256d-4f36-96e7-3930a876b722",
+		"name": "Checkin Service",
+		"description": "    API Details\n    - Component: Trouw Service\n    - Reference: ts\n    - Enviroment: dev\n    - Version: V.0.1\n    - Repository: [online](https://github.com/ConductionNL/trouw-service) / [zip](https://github.com/ConductionNL/trouw-service/archive/master.zip)\n    - Docker Image: [online](https://hub.docker.com/repository/docker/conduction/ts-php) \n    - Datamodel: [postman](/schema/ts.postman_collection.json) / [oas](/schema/openapi.yaml) / [pdf](/schema/datamodel.pdf) / [modelio (zip)](/schema/Datamodel_Modelio.zip) \n    \n    'Naast deze JSON rest API is er ook een [graphql](/graphql) interface beschikbaar.' ",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "web hooks",
+			"item": [
+				{
+					"name": "Retrieves the collection of WebHook resources.",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/web_hooks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"web_hooks"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Get Health",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "6a825596-2ffb-44fa-a366-4bbcb7f6889c",
+						"exec": [
+							"// example using pm.response.to.have\r",
+							"pm.test(\"response is ok\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// example using response assertions\r",
+							"pm.test(\"response should be okay to process\", function () {\r",
+							"    pm.response.to.not.be.error;\r",
+							"    pm.response.to.not.have.jsonBody(\"error\");\r",
+							"});\r",
+							"\r",
+							"// example using pm.response.to.be*\r",
+							"pm.test(\"response must be valid and have a body\", function () {\r",
+							"     // assert that the status code is 200\r",
+							"     pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants\r",
+							"     // assert that the response has a valid JSON body\r",
+							"     pm.response.to.be.withBody;\r",
+							"     pm.response.to.be.json; // this assertion also checks if a body  exists, so the above check is not needed\r",
+							"});\r",
+							"pm.test(\"status must be 'pass'\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    console.log(jsonData);\r",
+							"    //var payloadData = JSON.parse(jsonData.Payload); //parsed payload\r",
+							"\r",
+							"    //console.log(payloadData.Id);\r",
+							"    pm.expect(jsonData.status).to.equal('pass');\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/health+json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}",
+					"host": [
+						"{{baseUrl}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "apikey",
+		"apikey": [
+			{
+				"key": "value",
+				"value": "{{authorization}}",
+				"type": "string"
+			},
+			{
+				"key": "key",
+				"value": "Authorization",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "d25fc933-5ec2-4d0f-a6a2-c284da673c4a",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "daad27a2-c3b0-490d-9859-74ffd1e00fc4",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "8e6f5880-19e9-4eca-8795-d0716486eee3",
+			"key": "baseUrl",
+			"value": "https:/chis.dev.zuid-drecht.nl"
+		},
+		{
+			"id": "e640ea4e-acc4-405d-8ec1-94fdc0ee209f",
+			"key": "authorization",
+			"value": "45c1a4b6-59d3-4a6e-86bf-88a872f35845"
+		}
+	],
+	"protocolProfileBehavior": {}
+}
