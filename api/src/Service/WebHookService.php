@@ -69,13 +69,50 @@ class WebHookService
 
     public function createUser($webHook, $request)
     {
+        // Get contact for the new user and get the email for this users username
+        $person = [];
+        $username = 'undefined@contact.nl';
+        if (key_exists('contact_gegevens', $request['properties'])) {
+            if ($person = $this->commonGroundService->isResource($request['properties']['contact_gegevens'])) {
+                if (key_exists('emails', $person)) {
+                    $username = $person['emails'][0]['email'];
+                }
+            }
+        } else {
+            return;
+        }
+
+        // Create a organization in WRC
+        $organization = [];
+        if (key_exists('horeca_onderneming_contact', $request['properties'])) {
+            if ($organizationContact = $this->commonGroundService->isResource($request['properties']['horeca_onderneming_contact'])) {
+                $organization['name'] = $organizationContact['name'];
+                $organization['description'] = $organizationContact['description'];
+                if (defined($organizationContact['kvk']) and (!empty($organizationContact['kvk']))) {
+                    $organization['chamberOfComerce'] = $organizationContact['kvk'];
+                } elseif(key_exists('kvk', $request['properties'])) {
+                    $organization['chamberOfComerce'] = $request['properties']['kvk'];
+                } else {
+                    $organization['chamberOfComerce'] = '';
+                }
+                $organization['rsin'] = '';
+                $organization = $this->commonGroundService->saveResource($organization, ['component' => 'wrc', 'type' => 'organizations']);
+            }
+        } else {
+            return;
+        }
+
         // Create a user in UC
-//            $user['organization'] = ...;
-//            $user['username'] = ...;
-//            $user['password'] = ...;
-//            $user['person'] = ...;
-//            $user['userGroups'][0] = $this->commonGroundService->cleanUrl(['component' => 'uc', 'type' => 'groups'], ['id' => '4085d475-063b-47ed-98eb-0a7d8b01f3b7']);
-//            $this->commonGroundService->saveResource($user, ['component' => 'uc', 'type' => 'users']);
+        $user['organization'] = $organization['@id'];
+        $user['username'] = $username;
+        $user['password'] = 'test1234';
+        $user['person'] = $person['@id'];
+        $user = $this->commonGroundService->saveResource($user, ['component' => 'uc', 'type' => 'users']);
+
+        // Add the user to the userGroup Admin
+//        $userGroup = $this->commonGroundService->getResource(['component' => 'uc', 'type' => 'groups'], ['id' => '4085d475-063b-47ed-98eb-0a7d8b01f3b7']);
+//        $userGroup['users'] = array_merge($userGroup['users'], $user['@id']);
+//        $this->commonGroundService->saveResource($userGroup, ['component' => 'uc', 'type' => 'groups']);
     }
 
     public function createMessage(array $request, $content, $receiver, $attachments = null)
