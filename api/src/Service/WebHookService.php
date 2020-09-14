@@ -4,8 +4,6 @@ namespace App\Service;
 
 use App\Entity\WebHook;
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
-use DateInterval;
-use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
@@ -27,8 +25,7 @@ class WebHookService
         $results = [];
         $request = $this->commonGroundService->getResource($webHook->getRequest());
 
-        switch ($request['status'])
-        {
+        switch ($request['status']) {
             case 'submitted':
                 $results[] = $this->sendSubmittedEmail($webHook, $request);
                 $this->createUser($webHook, $request);
@@ -44,9 +41,10 @@ class WebHookService
         return $webHook;
     }
 
-    public function sendSubmittedEmail($webHook, $request){
+    public function sendSubmittedEmail($webHook, $request)
+    {
         $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-indiening"])['@id'];
-        if(key_exists('contact_gegevens', $request['properties'])) {
+        if (key_exists('contact_gegevens', $request['properties'])) {
             $receiver = $request['properties']['contact_gegevens'];
         } else {
             return 'Geen ontvanger gevonden';
@@ -56,9 +54,10 @@ class WebHookService
         return $this->commonGroundService->createResource($message, ['component'=>'bs', 'type'=>'messages'])['@id'];
     }
 
-    public function sendCancelledEmail($webHook, $request){
+    public function sendCancelledEmail($webHook, $request)
+    {
         $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-annulering"])['@id'];
-        if(key_exists('contact_gegevens', $request['properties'])) {
+        if (key_exists('contact_gegevens', $request['properties'])) {
             $receiver = $request['properties']['contact_gegevens'];
         } else {
             return 'Geen ontvanger gevonden';
@@ -102,7 +101,7 @@ class WebHookService
 
         $message['data'] = ['resource'=>$request, 'sender'=>$organization, 'receiver'=>$this->commonGroundService->getResource($message['reciever'])];
         $message['content'] = $content;
-        if($attachments){
+        if ($attachments) {
             $message['attachments'] = $attachments;
         }
 

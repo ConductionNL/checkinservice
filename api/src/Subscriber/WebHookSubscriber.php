@@ -3,11 +3,11 @@
 namespace App\Subscriber;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
-use App\Entity\WebHook;
 use App\Entity\Component;
+use App\Entity\WebHook;
 use App\Service\WebHookService;
-use Doctrine\ORM\EntityManagerInterface;
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
@@ -54,11 +54,11 @@ class WebHookSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if($resource instanceof WebHook){
+        if ($resource instanceof WebHook) {
             $resource->getRequest();
             $request = $this->commonGroundService->getResource($resource->getRequest());
 
-            if($request['status'] != 'complete'){
+            if ($request['status'] != 'complete') {
                 $resource = $this->webHookService->handle($resource);
             }
         }
