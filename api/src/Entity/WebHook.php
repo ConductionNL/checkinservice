@@ -8,22 +8,40 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use App\Repository\WebhookRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
-use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
-//@ORM\Entity(repositoryClass=WebhookRepository::class)
-//@ORM\Entity(repositoryClass="App\Repository\webhookRepository")
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"read"}},
- *     denormalizationContext={"groups"={"write"}}
+ *     	normalizationContext={"groups"={"read"}, "enable_max_depth"=true},
+ *     	denormalizationContext={"groups"={"write"}, "enable_max_depth"=true},
+ *     itemOperations={
+ * 		"get",
+ * 	    "put",
+ * 	   "delete",
+ *     "get_change_logs"={
+ *              "path"="/webhooks/{id}/change_log",
+ *              "method"="get",
+ *              "swagger_context" = {
+ *                  "summary"="Changelogs",
+ *                  "description"="Gets al the change logs for this resource"
+ *              }
+ *          },
+ *     "get_audit_trail"={
+ *              "path"="/webhooks/{id}/audit_trail",
+ *              "method"="get",
+ *              "swagger_context" = {
+ *                  "summary"="Audittrail",
+ *                  "description"="Gets the audit trail for this resource"
+ *              }
+ *          }
+ * 		},
  * )
- *
- * @ORM\Entity(repositoryClass="App\Repository\WebhookRepository")
+ * @ORM\Entity(repositoryClass=WebhookRepository::class)
  * @Gedmo\Loggable(logEntryClass="Conduction\CommonGroundBundle\Entity\ChangeLog")
  *
  * @ApiFilter(BooleanFilter::class)
@@ -34,12 +52,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 class WebHook
 {
     /**
-     * @var UuidInterface The UUID identifier of this object
+     * @var UuidInterface The UUID identifier of this resource
      *
      * @example e2984465-190a-4562-829e-a8cca81aa35d
      *
-     * @Groups({"read"})
      * @Assert\Uuid
+     * @Groups({"read"})
      * @ORM\Id
      * @ORM\Column(type="uuid", unique=true)
      * @ORM\GeneratedValue(strategy="CUSTOM")
@@ -48,99 +66,77 @@ class WebHook
     private $id;
 
     /**
-     * @var string task needed to perform
+     * @var string The contact for this organization
      *
-     * @example https://qc.zuid-drecht.nl/task/e2984465-190a-4562-829e-a8cca81aa35d
      * @Groups({"read", "write"})
      * @Assert\Url
+     * @Assert\Length(
+     *     max=255
+     * )
      */
-    private $task;
+    private $request;
 
     /**
-     * @var string resource the task is related to
-     *
-     * @example https://vrc.zuid-drecht.nl/request/e2984465-190a-4562-829e-a8cca81aa35d
-     * @Groups({"read", "write"})
-     * @ORM\Column(type="string", nullable=false)
-     * @Assert\Url
-     */
-    private $resource;
-
-    /**
-     * @var Datetime The moment this resource was created
+     * @var string The message that is logged to the token component
      *
      * @Groups({"read"})
-     * @Gedmo\Timestampable(on="create")
-     * @ORM\Column(type="datetime", nullable=true)
+     * @ORM\Column(type="text", nullable=true)
      */
-    private $dateCreated;
+    private $message;
 
     /**
-     * @var Datetime The moment this resource last Modified
+     * @var string The status that is logged to the token component **OK or FAILED**
      *
      * @Groups({"read"})
-     * @Gedmo\Timestampable(on="update")
-     * @ORM\Column(type="datetime", nullable=true)
+     *
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $dateModified;
+    private $status;
 
     /**
-     * @var array The result of the webhook
-     *
+     * @var array The url of the message that is stored to the TRC
      * @Groups({"read"})
      * @ORM\Column(type="array", nullable=true)
      */
     private $result = [];
 
-    public function getId()
+    public function getId(): ?UuidInterface
     {
         return $this->id;
     }
 
-    public function getTask(): ?string
+    public function getRequest(): ?string
     {
-        return $this->task;
+        return $this->request;
     }
 
-    public function setTask(string $task): self
+    public function setRequest(string $request): self
     {
-        $this->task = $task;
+        $this->request = $request;
 
         return $this;
     }
 
-    public function getResource(): ?string
+    public function getMessage(): ?string
     {
-        return $this->resource;
+        return $this->message;
     }
 
-    public function setResource(string $resource): self
+    public function setMessage(?string $message): self
     {
-        $this->resource = $resource;
+        $this->message = $message;
 
         return $this;
     }
 
-    public function getDateCreated(): ?\DateTimeInterface
+    public function getStatus(): ?string
     {
-        return $this->dateCreated;
+        return $this->status;
     }
 
-    public function setDateCreated(\DateTimeInterface $dateCreated): self
+    public function setStatus(?string $status): self
     {
-        $this->dateCreated = $dateCreated;
-
-        return $this;
-    }
-
-    public function getDateModified(): ?\DateTimeInterface
-    {
-        return $this->dateModified;
-    }
-
-    public function setDateModified(\DateTimeInterface $dateModified): self
-    {
-        $this->dateModified = $dateModified;
+        $this->status = $status;
 
         return $this;
     }

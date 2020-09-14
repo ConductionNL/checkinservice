@@ -9,7 +9,7 @@ settings:
   title: CheckIn Service
   version: V1.0
   majorVersion: v1
-  id: 
+  id: 31a2ad29-ee03-4aa9-be81-abf1fda7bbcc
   description: 'Naast deze JSON rest API is er ook een [graphql](/graphql) interface beschikbaar.'
   type: component
   repro: https://github.com/ConductionNL/checkinservice
@@ -49,7 +49,7 @@ settings:
   archiveEnabled: false
 
 security:
-  commongroundId: "9329d8d0-1d5e-433c-bb47-6991053c7fcb"
+  commongroundId: "31a2ad29-ee03-4aa9-be81-abf1fda7bbcc"
   commongroundKey: "45c1a4b6-59d3-4a6e-86bf-88a872f35845"
   applicationKey: "45c1a4b6-59d3-4a6e-86bf-88a872f35845"
   userKey: "79d5b14c-70ab-41fb-ac02-917e3288870b"
