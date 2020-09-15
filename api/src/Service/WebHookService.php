@@ -107,12 +107,10 @@ class WebHookService
         $user['username'] = $username;
         $user['password'] = 'test1234';
         $user['person'] = $person['@id'];
-        $user = $this->commonGroundService->saveResource($user, ['component' => 'uc', 'type' => 'users']);
-
-        // Add the user to the userGroup Admin
-//        $userGroup = $this->commonGroundService->getResource(['component' => 'uc', 'type' => 'groups'], ['id' => '4085d475-063b-47ed-98eb-0a7d8b01f3b7']);
-//        $userGroup['users'] = array_merge($userGroup['users'], $user['@id']);
-//        $this->commonGroundService->saveResource($userGroup, ['component' => 'uc', 'type' => 'groups']);
+        $user['userGroups'] = [
+            $this->commonGroundService->cleanUrl(['component' => 'uc', 'type' => 'groups'], ['id' => '4085d475-063b-47ed-98eb-0a7d8b01f3b7'])
+        ];
+        $this->commonGroundService->saveResource($user, ['component' => 'uc', 'type' => 'users']);
     }
 
     public function createMessage(array $request, $content, $receiver, $attachments = null)
