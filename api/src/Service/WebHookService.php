@@ -70,7 +70,6 @@ class WebHookService
     public function createUser($webHook, $request)
     {
         // Get contact for the new user and get the email for this users username
-        $person = [];
         $username = 'undefined@contact.nl';
         if (key_exists('contact_gegevens', $request['properties'])) {
             if ($person = $this->commonGroundService->isResource($request['properties']['contact_gegevens'])) {
@@ -82,10 +81,12 @@ class WebHookService
             return;
         }
 
-        // Create a organization in WRC
+        // Create an Organization in WRC, a Place in LC and a Node in CHIN
         $organization = [];
         if (key_exists('horeca_onderneming_contact', $request['properties'])) {
             if ($organizationContact = $this->commonGroundService->isResource($request['properties']['horeca_onderneming_contact'])) {
+
+                //Create an Organization
                 $organization['name'] = $organizationContact['name'];
                 $organization['description'] = $organizationContact['description'];
                 if (defined($organizationContact['kvk']) and (!empty($organizationContact['kvk']))) {
@@ -97,12 +98,55 @@ class WebHookService
                 }
                 $organization['rsin'] = '';
                 $organization = $this->commonGroundService->saveResource($organization, ['component' => 'wrc', 'type' => 'organizations']);
+
+                // Create an Organization Logo
+                $logo['name'] = $organizationContact['name'].' Logo';
+                $logo['description'] = $organizationContact['name'].' Logo';
+                $logo['organization'] = $organization['@id'];
+                $this->commonGroundService->saveResource($logo, ['component' => 'wrc', 'type' => 'images']);
+
+                // Create an Organization Style
+                $style['name'] = $organizationContact['name'];
+                $style['description'] = 'Huisstijl '.$organizationContact['name'];
+                $style['css'] = '';
+                $style['organization'] = $organization['@id'];
+                $this->commonGroundService->saveResource($style, ['component' => 'wrc', 'type' => 'styles']);
+
+                // Create a Place
+                $place['name'] = $organizationContact['name'];
+                $place['description'] = $organizationContact['description'];
+                $place['publicAccess'] = true;
+                $place['smokingAllowed'] = false;
+                $openingTime = new DateTime();
+                $openingTime->setTime(16, 00);
+                $place['openingTime'] = $openingTime;
+                $closingTime = new DateTime();
+                $closingTime->setTime(01, 00);
+                $place['closingTime'] = $closingTime;
+                $place['organization'] = $organization['@id'];
+                $place = $this->commonGroundService->saveResource($place, ['component' => 'lc', 'type' => 'places']);
+
+                // Create a (example) Place Accommodation
+                $accommodation['name'] = 'Tafel 1';
+                $accommodation['description'] = $organizationContact['name'].' Tafel 1';
+                $accommodation['place'] = $place['@id'];
+                $this->commonGroundService->saveResource($accommodation, ['component' => 'lc', 'type' => 'accommodations']);
+
+                // Create a Node
+                $node['name'] = 'Tafel 1';
+                $node['description'] = $organizationContact['name'].' Tafel 1';
+                $node['passthroughUrl'] = 'https://zuid-drecht.nl';
+                $node['place'] = $place['@id'];
+                $node['organization'] = $organization['@id'];
+                $this->commonGroundService->saveResource($node, ['component' => 'chin', 'type' => 'nodes']);
+            } else {
+                return;
             }
         } else {
             return;
         }
 
-        // Create a user in UC
+        // Create an user in UC
         $user['organization'] = $organization['@id'];
         $user['username'] = $username;
         $user['password'] = 'test1234';
