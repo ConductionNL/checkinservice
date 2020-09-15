@@ -90,7 +90,7 @@ class WebHookService
                 $organization['description'] = $organizationContact['description'];
                 if (defined($organizationContact['kvk']) and (!empty($organizationContact['kvk']))) {
                     $organization['chamberOfComerce'] = $organizationContact['kvk'];
-                } elseif(key_exists('kvk', $request['properties'])) {
+                } elseif (key_exists('kvk', $request['properties'])) {
                     $organization['chamberOfComerce'] = $request['properties']['kvk'];
                 } else {
                     $organization['chamberOfComerce'] = '';
@@ -108,7 +108,7 @@ class WebHookService
         $user['password'] = 'test1234';
         $user['person'] = $person['@id'];
         $user['userGroups'] = [
-            $this->commonGroundService->cleanUrl(['component' => 'uc', 'type' => 'groups'], ['id' => '4085d475-063b-47ed-98eb-0a7d8b01f3b7'])
+            $this->commonGroundService->cleanUrl(['component' => 'uc', 'type' => 'groups'], ['id' => '4085d475-063b-47ed-98eb-0a7d8b01f3b7']),
         ];
         $this->commonGroundService->saveResource($user, ['component' => 'uc', 'type' => 'users']);
     }
