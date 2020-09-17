@@ -27,11 +27,11 @@ class WebHookService
 
         switch ($request['status']) {
             case 'submitted':
-                $results[] = $this->sendSubmittedEmail($webHook, $request);
+                $results[] = $this->sendEmail($webHook, $request, 'welkom');
                 $this->createUser($webHook, $request);
                 break;
             case 'cancelled':
-                $results[] = $this->sendCancelledEmail($webHook, $request);
+                $results[] = $this->sendEmail($webHook, $request, 'annulering');
                 break;
         }
         $webHook->setResult($results);
@@ -41,22 +41,24 @@ class WebHookService
         return $webHook;
     }
 
-    public function sendSubmittedEmail($webHook, $request)
+    public function sendEmail($webHook, $request, $emailType)
     {
-        $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-indiening"])['@id'];
-        if (key_exists('contact_gegevens', $request['properties'])) {
-            $receiver = $request['properties']['contact_gegevens'];
-        } else {
-            return 'Geen ontvanger gevonden';
+        $content = [];
+        switch ($emailType)
+        {
+            case 'welkom':
+                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-welkom"])['@id'];
+                break;
+            case 'inlognaam':
+                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-inlognaam"])['@id'];
+                break;
+            case 'wachtwoord':
+                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-wachtwoord"])['@id'];
+                break;
+            case 'annulering':
+                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-annulering"])['@id'];
+                break;
         }
-        $message = $this->createMessage($request, $content, $receiver);
-
-        return $this->commonGroundService->createResource($message, ['component'=>'bs', 'type'=>'messages'])['@id'];
-    }
-
-    public function sendCancelledEmail($webHook, $request)
-    {
-        $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-annulering"])['@id'];
         if (key_exists('contact_gegevens', $request['properties'])) {
             $receiver = $request['properties']['contact_gegevens'];
         } else {
@@ -155,6 +157,9 @@ class WebHookService
             $this->commonGroundService->cleanUrl(['component' => 'uc', 'type' => 'groups'], ['id' => '4085d475-063b-47ed-98eb-0a7d8b01f3b7']),
         ];
         $this->commonGroundService->saveResource($user, ['component' => 'uc', 'type' => 'users']);
+
+        $this->sendEmail($webHook, $request, 'inlognaam');
+        $this->sendEmail($webHook, $request, 'wachtwoord');
     }
 
     public function createMessage(array $request, $content, $receiver, $attachments = null)
@@ -167,7 +172,7 @@ class WebHookService
         }
 
         $message = [];
-        $message['service'] = $this->commonGroundService->getResourceList(['component'=>'bs', 'type'=>'services'], "?type=mailer&organization=$serviceOrganization")['hydra:member'][0]['@id'];
+        $message['service'] = $this->commonGroundService->getResourceList(['component'=>'bs', 'type'=>'services'], "type=mailer&organization=$serviceOrganization")['hydra:member'][0]['@id'];
         $message['status'] = 'queued';
         $organization = $this->commonGroundService->getResource($request['organization']);
 
