@@ -162,7 +162,7 @@ class WebHookService
 
         $results[] = $this->sendEmail($webHook, $request, 'inlognaam');
         array_push($results, $this->sendEmail($webHook, $request, 'wachtwoord'));
-        
+
         return $results;
     }
 
