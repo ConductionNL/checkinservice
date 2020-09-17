@@ -44,8 +44,7 @@ class WebHookService
     public function sendEmail($webHook, $request, $emailType)
     {
         $content = [];
-        switch ($emailType)
-        {
+        switch ($emailType) {
             case 'welkom':
                 $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-welkom"])['@id'];
                 break;
@@ -163,6 +162,7 @@ class WebHookService
 
         $results[] = $this->sendEmail($webHook, $request, 'inlognaam');
         array_push($results, $this->sendEmail($webHook, $request, 'wachtwoord'));
+        
         return $results;
     }
 
