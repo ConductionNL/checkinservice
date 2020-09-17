@@ -8,7 +8,7 @@ info:
     - Reference: chis
     - Enviroment: dev
     - Version: V1.0
-    - Repository: [online](https://github.com/ConductionNL/proto-component) / [zip](https://github.com/ConductionNL/proto-component/archive/master.zip)
+    - Repository: [online](https://github.com/ConductionNL/checkinservice) / [zip](https://github.com/ConductionNL/checkinservice/archive/master.zip)
     - Docker Image: [online](https://hub.docker.com/repository/docker/conduction/chis-php) 
     - Datamodel: [postman](/schema/chis.postman_collection.json) / [oas](/schema/openapi.yaml) / [pdf](/schema/datamodel.pdf) / [modelio (zip)](/schema/Datamodel_Modelio.zip) 
     
@@ -2038,7 +2038,7 @@ paths:
               - asc
               - desc
         -
-          name: 'order[resource]'
+          name: 'order[message]'
           in: query
           required: false
           schema:
@@ -2047,16 +2047,7 @@ paths:
               - asc
               - desc
         -
-          name: 'order[dateCreated]'
-          in: query
-          required: false
-          schema:
-            type: string
-            enum:
-              - asc
-              - desc
-        -
-          name: 'order[dateModified]'
+          name: 'order[status]'
           in: query
           required: false
           schema:
@@ -2074,54 +2065,6 @@ paths:
               - asc
               - desc
         -
-          name: 'dateCreated[before]'
-          in: query
-          required: false
-          schema:
-            type: string
-        -
-          name: 'dateCreated[strictly_before]'
-          in: query
-          required: false
-          schema:
-            type: string
-        -
-          name: 'dateCreated[after]'
-          in: query
-          required: false
-          schema:
-            type: string
-        -
-          name: 'dateCreated[strictly_after]'
-          in: query
-          required: false
-          schema:
-            type: string
-        -
-          name: 'dateModified[before]'
-          in: query
-          required: false
-          schema:
-            type: string
-        -
-          name: 'dateModified[strictly_before]'
-          in: query
-          required: false
-          schema:
-            type: string
-        -
-          name: 'dateModified[after]'
-          in: query
-          required: false
-          schema:
-            type: string
-        -
-          name: 'dateModified[strictly_after]'
-          in: query
-          required: false
-          schema:
-            type: string
-        -
           name: id
           in: query
           required: false
@@ -2138,13 +2081,13 @@ paths:
           style: form
           explode: true
         -
-          name: resource
+          name: message
           in: query
           required: false
           schema:
             type: string
         -
-          name: 'resource[]'
+          name: 'message[]'
           in: query
           required: false
           schema:
@@ -2154,29 +2097,21 @@ paths:
           style: form
           explode: true
         -
-          name: dateCreated
+          name: status
           in: query
           required: false
           schema:
             type: string
         -
-          name: 'dateCreated[]'
+          name: 'status[]'
           in: query
           required: false
           schema:
-            type: string
-        -
-          name: dateModified
-          in: query
-          required: false
-          schema:
-            type: string
-        -
-          name: 'dateModified[]'
-          in: query
-          required: false
-          schema:
-            type: string
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
         -
           name: result
           in: query
@@ -2544,52 +2479,6 @@ paths:
           description: 'Resource not found'
       produces:
         - application/health+json
-    delete:
-      tags:
-        - WebHook
-      operationId: deleteWebHookItem
-      summary: 'Removes the WebHook resource.'
-      responses:
-        204:
-          description: 'WebHook resource deleted'
-        404:
-          description: 'Resource not found'
-      parameters:
-        -
-          name: id
-          in: path
-          required: true
-          schema:
-            type: string
-        -
-          name: Authorization
-          description: 'The JWT of the entity performing the request'
-          in: header
-        -
-          name: API-Version
-          description: 'The version of the API conform [Landelijke API-strategie.](https://geonovum.github.io/KP-APIs/#versioning)'
-          example: 1.0.1
-          in: header
-        -
-          name: X-NLX-Logrecord-ID
-          description: 'A  globally unique id of the request, which makes a request traceable throughout the network.'
-          in: header
-        -
-          name: X-NLX-Request-Process-Id
-          description: 'A process id for purpose registration (doelbinding)'
-          in: header
-        -
-          name: X-NLX-Request-Data-Elements
-          description: 'A list of requested data elements'
-          in: header
-        -
-          name: X-NLX-Request-Data-Subject
-          description: 'A key-value list of data subjects related to this request. e.g. `bsn=12345678, kenteken=ab-12-fg`'
-          in: header
-        -
-          name: X-NLX-Audit-Clarification
-          description: 'A clarification as to why a request has been made  (doelbinding)'
-          in: header
     put:
       tags:
         - WebHook
@@ -2720,11 +2609,16 @@ paths:
             schema:
               $ref: '#/components/schemas/WebHook-write'
         description: 'The updated WebHook resource'
-    patch:
+    delete:
       tags:
         - WebHook
-      operationId: patchWebHookItem
-      summary: 'Updates the WebHook resource.'
+      operationId: deleteWebHookItem
+      summary: 'Removes the WebHook resource.'
+      responses:
+        204:
+          description: 'WebHook resource deleted'
+        404:
+          description: 'Resource not found'
       parameters:
         -
           name: id
@@ -2761,9 +2655,93 @@ paths:
           name: X-NLX-Audit-Clarification
           description: 'A clarification as to why a request has been made  (doelbinding)'
           in: header
+  '/webhooks/{id}/audit_trail':
+    get:
+      tags:
+        - WebHook
+      operationId: get_audit_trailWebHookItem
+      summary: 'Retrieves a WebHook resource.'
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        -
+          name: Authorization
+          description: 'The JWT of the entity performing the request'
+          in: header
+        -
+          name: API-Version
+          description: 'The version of the API conform [Landelijke API-strategie.](https://geonovum.github.io/KP-APIs/#versioning)'
+          example: 1.0.1
+          in: header
+        -
+          name: X-NLX-Logrecord-ID
+          description: 'A  globally unique id of the request, which makes a request traceable throughout the network.'
+          in: header
+        -
+          name: X-NLX-Request-Process-Id
+          description: 'A process id for purpose registration (doelbinding)'
+          in: header
+        -
+          name: X-NLX-Request-Data-Elements
+          description: 'A list of requested data elements'
+          in: header
+        -
+          name: X-NLX-Request-Data-Subject
+          description: 'A key-value list of data subjects related to this request. e.g. `bsn=12345678, kenteken=ab-12-fg`'
+          in: header
+        -
+          name: X-NLX-Audit-Clarification
+          description: 'A clarification as to why a request has been made  (doelbinding)'
+          in: header
+        -
+          name: Link
+          description: 'A [websub](https://www.w3.org/TR/websub/#discovery) header like <https://hub.example.com/>; rel="hub"'
+          in: header
+        -
+          name: 'extend[]'
+          required: false
+          description: 'An array of nested objects to include in the return object'
+          in: query
+          schema:
+            type: array
+        -
+          name: 'fields[]'
+          required: false
+          description: 'An array of fields to return in output, wil return all fields is not supplied'
+          in: query
+          schema:
+            type: array
+        -
+          name: validOn
+          required: false
+          description: 'Returns object as valid on a given date time'
+          schema:
+            type: string
+            format: date-time
+          in: query
+        -
+          name: validFrom
+          required: false
+          description: 'Returns objects valid from a given date time'
+          schema:
+            type: string
+            format: date-time
+          in: query
+        -
+          name: validUntil
+          required: false
+          description: 'Returns objects valid until a given date time'
+          schema:
+            type: string
+            format: date-time
+          in: query
       responses:
         200:
-          description: 'WebHook resource updated'
+          description: 'WebHook resource response'
           content:
             application/ld+json:
               schema:
@@ -2804,40 +2782,141 @@ paths:
             text/html:
               schema:
                 $ref: '#/components/schemas/WebHook-read'
-        400:
-          description: 'Invalid input'
         404:
           description: 'Resource not found'
-      requestBody:
-        content:
-          application/ld+json:
-            schema:
-              $ref: '#/components/schemas/WebHook:jsonld-write'
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WebHook-write'
-          application/hal+json:
-            schema:
-              $ref: '#/components/schemas/WebHook-write'
-          application/vnd.api+json:
-            schema:
-              $ref: '#/components/schemas/WebHook-write'
-          application/merge-patch+json:
-            schema:
-              $ref: '#/components/schemas/WebHook-write'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/WebHook-write'
-          applications/x-yaml:
-            schema:
-              $ref: '#/components/schemas/WebHook-write'
-          text/csv:
-            schema:
-              $ref: '#/components/schemas/WebHook-write'
-          text/html:
-            schema:
-              $ref: '#/components/schemas/WebHook-write'
-        description: 'The updated WebHook resource'
+      produces:
+        - application/health+json
+  '/webhooks/{id}/change_log':
+    get:
+      tags:
+        - WebHook
+      operationId: get_change_logsWebHookItem
+      summary: 'Retrieves a WebHook resource.'
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        -
+          name: Authorization
+          description: 'The JWT of the entity performing the request'
+          in: header
+        -
+          name: API-Version
+          description: 'The version of the API conform [Landelijke API-strategie.](https://geonovum.github.io/KP-APIs/#versioning)'
+          example: 1.0.1
+          in: header
+        -
+          name: X-NLX-Logrecord-ID
+          description: 'A  globally unique id of the request, which makes a request traceable throughout the network.'
+          in: header
+        -
+          name: X-NLX-Request-Process-Id
+          description: 'A process id for purpose registration (doelbinding)'
+          in: header
+        -
+          name: X-NLX-Request-Data-Elements
+          description: 'A list of requested data elements'
+          in: header
+        -
+          name: X-NLX-Request-Data-Subject
+          description: 'A key-value list of data subjects related to this request. e.g. `bsn=12345678, kenteken=ab-12-fg`'
+          in: header
+        -
+          name: X-NLX-Audit-Clarification
+          description: 'A clarification as to why a request has been made  (doelbinding)'
+          in: header
+        -
+          name: Link
+          description: 'A [websub](https://www.w3.org/TR/websub/#discovery) header like <https://hub.example.com/>; rel="hub"'
+          in: header
+        -
+          name: 'extend[]'
+          required: false
+          description: 'An array of nested objects to include in the return object'
+          in: query
+          schema:
+            type: array
+        -
+          name: 'fields[]'
+          required: false
+          description: 'An array of fields to return in output, wil return all fields is not supplied'
+          in: query
+          schema:
+            type: array
+        -
+          name: validOn
+          required: false
+          description: 'Returns object as valid on a given date time'
+          schema:
+            type: string
+            format: date-time
+          in: query
+        -
+          name: validFrom
+          required: false
+          description: 'Returns objects valid from a given date time'
+          schema:
+            type: string
+            format: date-time
+          in: query
+        -
+          name: validUntil
+          required: false
+          description: 'Returns objects valid until a given date time'
+          schema:
+            type: string
+            format: date-time
+          in: query
+      responses:
+        200:
+          description: 'WebHook resource response'
+          content:
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/WebHook:jsonld-read'
+            application/json+ld:
+              schema:
+                $ref: '#/components/schemas/WebHook:jsonld-read'
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/WebHook-read'
+            application/json+hal:
+              schema:
+                $ref: '#/components/schemas/WebHook-read'
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/WebHook-read'
+            application/json+vnd.api:
+              schema:
+                $ref: '#/components/schemas/WebHook-read'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebHook-read'
+            application/health+json:
+              schema:
+                $ref: '#/components/schemas/WebHook-read'
+            application/json+health:
+              schema:
+                $ref: '#/components/schemas/WebHook-read'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/WebHook-read'
+            application/x-yaml:
+              schema:
+                $ref: '#/components/schemas/WebHook-read'
+            text/csv:
+              schema:
+                $ref: '#/components/schemas/WebHook-read'
+            text/html:
+              schema:
+                $ref: '#/components/schemas/WebHook-read'
+        404:
+          description: 'Resource not found'
+      produces:
+        - application/health+json
 components:
   schemas:
     AuditTrail-read:
@@ -3224,33 +3303,26 @@ components:
       properties:
         id:
           readOnly: true
-          description: 'The UUID identifier of this object'
+          description: 'The UUID identifier of this resource'
           externalDocs:
             url: 'http://schema.org/identifier'
           type: string
           format: uuid
-        task:
-          description: 'task needed to perform'
+        request:
+          description: 'The contact for this organization'
           externalDocs:
             url: 'http://schema.org/url'
           type: string
-        resource:
-          description: 'resource the task is related to'
-          externalDocs:
-            url: 'http://schema.org/url'
+        message:
+          description: 'The message that is logged to the token component'
           type: string
-        dateCreated:
-          description: 'The moment this resource was created'
-          type: string
-          format: date-time
           nullable: true
-        dateModified:
-          description: 'The moment this resource last Modified'
+        status:
+          description: 'The status that is logged to the token component **OK or FAILED**'
           type: string
-          format: date-time
           nullable: true
         result:
-          description: 'The result of the webhook'
+          description: 'The url of the message that is stored to the TRC'
           type: array
           items:
             type: string
@@ -3259,13 +3331,8 @@ components:
       type: object
       description: ''
       properties:
-        task:
-          description: 'task needed to perform'
-          externalDocs:
-            url: 'http://schema.org/url'
-          type: string
-        resource:
-          description: 'resource the task is related to'
+        request:
+          description: 'The contact for this organization'
           externalDocs:
             url: 'http://schema.org/url'
           type: string
@@ -3284,33 +3351,26 @@ components:
           type: string
         id:
           readOnly: true
-          description: 'The UUID identifier of this object'
+          description: 'The UUID identifier of this resource'
           externalDocs:
             url: 'http://schema.org/identifier'
           type: string
           format: uuid
-        task:
-          description: 'task needed to perform'
+        request:
+          description: 'The contact for this organization'
           externalDocs:
             url: 'http://schema.org/url'
           type: string
-        resource:
-          description: 'resource the task is related to'
-          externalDocs:
-            url: 'http://schema.org/url'
+        message:
+          description: 'The message that is logged to the token component'
           type: string
-        dateCreated:
-          description: 'The moment this resource was created'
-          type: string
-          format: date-time
           nullable: true
-        dateModified:
-          description: 'The moment this resource last Modified'
+        status:
+          description: 'The status that is logged to the token component **OK or FAILED**'
           type: string
-          format: date-time
           nullable: true
         result:
-          description: 'The result of the webhook'
+          description: 'The url of the message that is stored to the TRC'
           type: array
           items:
             type: string
@@ -3328,13 +3388,8 @@ components:
         '@type':
           readOnly: true
           type: string
-        task:
-          description: 'task needed to perform'
-          externalDocs:
-            url: 'http://schema.org/url'
-          type: string
-        resource:
-          description: 'resource the task is related to'
+        request:
+          description: 'The contact for this organization'
           externalDocs:
             url: 'http://schema.org/url'
           type: string
@@ -3342,32 +3397,19 @@ definitions:
   WebHook-read:
     properties:
       id:
-        description: 'The UUID identifier of this object'
+        description: 'The UUID identifier of this resource'
         type: string
         example: e2984465-190a-4562-829e-a8cca81aa35d
         format: uuid
-      resource:
-        description: 'resource the task is related to'
+      message:
+        description: 'The message that is logged to the token component'
         type: string
-        example: 'https://vrc.zuid-drecht.nl/request/e2984465-190a-4562-829e-a8cca81aa35d'
-        format: url
-      dateCreated:
-        description: 'The moment this resource was created'
-        type: \Datetime
-      dateModified:
-        description: 'The moment this resource last Modified'
-        type: \Datetime
+      status:
+        description: 'The status that is logged to the token component **OK or FAILED**'
+        type: string
       result:
-        description: 'The result of the webhook'
+        description: 'The url of the message that is stored to the TRC'
         type: array
-    required: []
-  WebHook-write:
-    properties:
-      resource:
-        description: 'resource the task is related to'
-        type: string
-        example: 'https://vrc.zuid-drecht.nl/request/e2984465-190a-4562-829e-a8cca81aa35d'
-        format: url
     required: []
   ChangeLog-read:
     properties:
@@ -3407,12 +3449,12 @@ definitions:
         description: 'The moment this request was created'
         type: string
         format: date-time
-        example: '2020-09-03 14:11:20'
+        example: '2020-09-15 12:39:12'
       dateModified:
         description: 'The moment this request last Modified'
         type: string
         format: date-time
-        example: '2020-09-03 14:11:20'
+        example: '2020-09-15 12:39:12'
     required: []
   ChangeLog-write:
     properties:
@@ -3526,12 +3568,12 @@ definitions:
         description: 'The moment this request was created'
         type: string
         format: date-time
-        example: '2020-09-03 14:11:20'
+        example: '2020-09-15 12:39:12'
       dateModified:
         description: 'The moment this request last Modified'
         type: string
         format: date-time
-        example: '2020-09-03 14:11:20'
+        example: '2020-09-15 12:39:12'
     required: []
   AuditTrail-write:
     properties:
@@ -3578,8 +3620,8 @@ securityDefinitions:
 host: irc.zaakonline.nl
 servers:
   -
-    name: conduction.nl
-    url: chis.dev.conduction.nl
+    name: zuid-drecht.nl
+    url: chis.dev.zuid-drecht.nl
 externalDocs:
   -
     description: 'OAS Documentatie'
