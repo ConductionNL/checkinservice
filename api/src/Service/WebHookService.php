@@ -27,8 +27,8 @@ class WebHookService
 
         switch ($request['status']) {
             case 'submitted':
-                $results[] = $this->sendEmail($webHook, $request, 'welkom');
-                $this->createUser($webHook, $request);
+                $results[] = $this->createUser($webHook, $request);
+                array_merge($results, $this->sendEmail($webHook, $request, 'welkom'));
                 break;
             case 'cancelled':
                 $results[] = $this->sendEmail($webHook, $request, 'annulering');
@@ -80,7 +80,7 @@ class WebHookService
                 }
             }
         } else {
-            return;
+            return 'contact_gegevens does not exist in this request';
         }
 
         // Create an Organization in WRC, a Place in LC and a Node in CHIN
@@ -107,10 +107,17 @@ class WebHookService
                 $logo['organization'] = $organization['@id'];
                 $this->commonGroundService->saveResource($logo, ['component' => 'wrc', 'type' => 'images']);
 
+                // Create an Organization Favicon
+                $favicon['name'] = 'favicon';
+                $favicon['description'] = $organizationContact['name'].' favicon';
+                $favicon['organization'] = $organization['@id'];
+                $favicon = $this->commonGroundService->saveResource($favicon, ['component' => 'wrc', 'type' => 'images']);
+
                 // Create an Organization Style
                 $style['name'] = $organizationContact['name'];
                 $style['description'] = 'Huisstijl '.$organizationContact['name'];
                 $style['css'] = '';
+                $style['favicon'] = $favicon['@id'];
                 $style['organization'] = $organization['@id'];
                 $this->commonGroundService->saveResource($style, ['component' => 'wrc', 'type' => 'styles']);
 
@@ -119,12 +126,8 @@ class WebHookService
                 $place['description'] = $organizationContact['description'];
                 $place['publicAccess'] = true;
                 $place['smokingAllowed'] = false;
-                $openingTime = new DateTime();
-                $openingTime->setTime(16, 00);
-                $place['openingTime'] = $openingTime;
-                $closingTime = new DateTime();
-                $closingTime->setTime(01, 00);
-                $place['closingTime'] = $closingTime;
+                $place['openingTime'] = '16:00';
+                $place['closingTime'] = '1:00';
                 $place['organization'] = $organization['@id'];
                 $place = $this->commonGroundService->saveResource($place, ['component' => 'lc', 'type' => 'places']);
 
@@ -142,10 +145,10 @@ class WebHookService
                 $node['organization'] = $organization['@id'];
                 $this->commonGroundService->saveResource($node, ['component' => 'chin', 'type' => 'nodes']);
             } else {
-                return;
+                return 'horeca_onderneming_contact is not a resource';
             }
         } else {
-            return;
+            return 'horeca_onderneming_contact does not exist in this request';
         }
 
         // Create an user in UC
@@ -154,12 +157,13 @@ class WebHookService
         $user['password'] = 'test1234';
         $user['person'] = $person['@id'];
         $user['userGroups'] = [
-            $this->commonGroundService->cleanUrl(['component' => 'uc', 'type' => 'groups'], ['id' => '4085d475-063b-47ed-98eb-0a7d8b01f3b7']),
+            $this->commonGroundService->cleanUrl(['component' => 'uc', 'type' => 'groups', 'id' => '4085d475-063b-47ed-98eb-0a7d8b01f3b7']),
         ];
         $this->commonGroundService->saveResource($user, ['component' => 'uc', 'type' => 'users']);
 
-        $this->sendEmail($webHook, $request, 'inlognaam');
-        $this->sendEmail($webHook, $request, 'wachtwoord');
+        $results[] = $this->sendEmail($webHook, $request, 'inlognaam');
+        array_push($results, $this->sendEmail($webHook, $request, 'wachtwoord'));
+        return $results;
     }
 
     public function createMessage(array $request, $content, $receiver, $attachments = null)
