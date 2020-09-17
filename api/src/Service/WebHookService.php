@@ -27,11 +27,11 @@ class WebHookService
 
         switch ($request['status']) {
             case 'submitted':
-                $results[] = $this->sendSubmittedEmail($webHook, $request);
-                $this->createUser($webHook, $request);
+                $results[] = $this->createUser($webHook, $request);
+                array_merge($results, $this->sendEmail($webHook, $request, 'welkom'));
                 break;
             case 'cancelled':
-                $results[] = $this->sendCancelledEmail($webHook, $request);
+                $results[] = $this->sendEmail($webHook, $request, 'annulering');
                 break;
         }
         $webHook->setResult($results);
@@ -41,22 +41,23 @@ class WebHookService
         return $webHook;
     }
 
-    public function sendSubmittedEmail($webHook, $request)
+    public function sendEmail($webHook, $request, $emailType)
     {
-        $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-indiening"])['@id'];
-        if (key_exists('contact_gegevens', $request['properties'])) {
-            $receiver = $request['properties']['contact_gegevens'];
-        } else {
-            return 'Geen ontvanger gevonden';
+        $content = [];
+        switch ($emailType) {
+            case 'welkom':
+                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-welkom"])['@id'];
+                break;
+            case 'inlognaam':
+                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-inlognaam"])['@id'];
+                break;
+            case 'wachtwoord':
+                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-wachtwoord"])['@id'];
+                break;
+            case 'annulering':
+                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-annulering"])['@id'];
+                break;
         }
-        $message = $this->createMessage($request, $content, $receiver);
-
-        return $this->commonGroundService->createResource($message, ['component'=>'bs', 'type'=>'messages'])['@id'];
-    }
-
-    public function sendCancelledEmail($webHook, $request)
-    {
-        $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-annulering"])['@id'];
         if (key_exists('contact_gegevens', $request['properties'])) {
             $receiver = $request['properties']['contact_gegevens'];
         } else {
@@ -70,7 +71,6 @@ class WebHookService
     public function createUser($webHook, $request)
     {
         // Get contact for the new user and get the email for this users username
-        $person = [];
         $username = 'undefined@contact.nl';
         if (key_exists('contact_gegevens', $request['properties'])) {
             if ($person = $this->commonGroundService->isResource($request['properties']['contact_gegevens'])) {
@@ -79,13 +79,15 @@ class WebHookService
                 }
             }
         } else {
-            return;
+            return 'contact_gegevens does not exist in this request';
         }
 
-        // Create a organization in WRC
+        // Create an Organization in WRC, a Place in LC and a Node in CHIN
         $organization = [];
         if (key_exists('horeca_onderneming_contact', $request['properties'])) {
             if ($organizationContact = $this->commonGroundService->isResource($request['properties']['horeca_onderneming_contact'])) {
+
+                //Create an Organization
                 $organization['name'] = $organizationContact['name'];
                 $organization['description'] = $organizationContact['description'];
                 if (defined($organizationContact['kvk']) and (!empty($organizationContact['kvk']))) {
@@ -97,20 +99,71 @@ class WebHookService
                 }
                 $organization['rsin'] = '';
                 $organization = $this->commonGroundService->saveResource($organization, ['component' => 'wrc', 'type' => 'organizations']);
+
+                // Create an Organization Logo
+                $logo['name'] = $organizationContact['name'].' Logo';
+                $logo['description'] = $organizationContact['name'].' Logo';
+                $logo['organization'] = $organization['@id'];
+                $this->commonGroundService->saveResource($logo, ['component' => 'wrc', 'type' => 'images']);
+
+                // Create an Organization Favicon
+                $favicon['name'] = 'favicon';
+                $favicon['description'] = $organizationContact['name'].' favicon';
+                $favicon['organization'] = $organization['@id'];
+                $favicon = $this->commonGroundService->saveResource($favicon, ['component' => 'wrc', 'type' => 'images']);
+
+                // Create an Organization Style
+                $style['name'] = $organizationContact['name'];
+                $style['description'] = 'Huisstijl '.$organizationContact['name'];
+                $style['css'] = '';
+                $style['favicon'] = $favicon['@id'];
+                $style['organization'] = $organization['@id'];
+                $this->commonGroundService->saveResource($style, ['component' => 'wrc', 'type' => 'styles']);
+
+                // Create a Place
+                $place['name'] = $organizationContact['name'];
+                $place['description'] = $organizationContact['description'];
+                $place['publicAccess'] = true;
+                $place['smokingAllowed'] = false;
+                $place['openingTime'] = '16:00';
+                $place['closingTime'] = '1:00';
+                $place['organization'] = $organization['@id'];
+                $place = $this->commonGroundService->saveResource($place, ['component' => 'lc', 'type' => 'places']);
+
+                // Create a (example) Place Accommodation
+                $accommodation['name'] = 'Tafel 1';
+                $accommodation['description'] = $organizationContact['name'].' Tafel 1';
+                $accommodation['place'] = $place['@id'];
+                $this->commonGroundService->saveResource($accommodation, ['component' => 'lc', 'type' => 'accommodations']);
+
+                // Create a Node
+                $node['name'] = 'Tafel 1';
+                $node['description'] = $organizationContact['name'].' Tafel 1';
+                $node['passthroughUrl'] = 'https://zuid-drecht.nl';
+                $node['place'] = $place['@id'];
+                $node['organization'] = $organization['@id'];
+                $this->commonGroundService->saveResource($node, ['component' => 'chin', 'type' => 'nodes']);
+            } else {
+                return 'horeca_onderneming_contact is not a resource';
             }
         } else {
-            return;
+            return 'horeca_onderneming_contact does not exist in this request';
         }
 
-        // Create a user in UC
+        // Create an user in UC
         $user['organization'] = $organization['@id'];
         $user['username'] = $username;
         $user['password'] = 'test1234';
         $user['person'] = $person['@id'];
         $user['userGroups'] = [
-            $this->commonGroundService->cleanUrl(['component' => 'uc', 'type' => 'groups'], ['id' => '4085d475-063b-47ed-98eb-0a7d8b01f3b7']),
+            $this->commonGroundService->cleanUrl(['component' => 'uc', 'type' => 'groups', 'id' => '4085d475-063b-47ed-98eb-0a7d8b01f3b7']),
         ];
         $this->commonGroundService->saveResource($user, ['component' => 'uc', 'type' => 'users']);
+
+        $results[] = $this->sendEmail($webHook, $request, 'inlognaam');
+        array_push($results, $this->sendEmail($webHook, $request, 'wachtwoord'));
+
+        return $results;
     }
 
     public function createMessage(array $request, $content, $receiver, $attachments = null)
@@ -123,7 +176,7 @@ class WebHookService
         }
 
         $message = [];
-        $message['service'] = $this->commonGroundService->getResourceList(['component'=>'bs', 'type'=>'services'], "?type=mailer&organization=$serviceOrganization")['hydra:member'][0]['@id'];
+        $message['service'] = $this->commonGroundService->getResourceList(['component'=>'bs', 'type'=>'services'], "type=mailer&organization=$serviceOrganization")['hydra:member'][0]['@id'];
         $message['status'] = 'queued';
         $organization = $this->commonGroundService->getResource($request['organization']);
 
