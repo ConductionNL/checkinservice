@@ -28,7 +28,7 @@ class WebHookService
         switch ($request['status']) {
             case 'submitted':
                 $results[] = $this->createUser($webHook, $request);
-                array_merge($results, $this->sendEmail($webHook, $request, 'welkom'));
+                array_push($results, $this->sendEmail($webHook, $request, 'welkom'));
                 break;
             case 'cancelled':
                 $results[] = $this->sendEmail($webHook, $request, 'annulering');
