@@ -7,7 +7,7 @@ use Conduction\CommonGroundBundle\Service\CommonGroundService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
-class WebHookService
+class CheckinService
 {
     private $em;
     private $commonGroundService;
