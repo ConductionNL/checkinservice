@@ -23,17 +23,18 @@ class CheckinService
     public function handle(WebHook $webHook)
     {
         $results = [];
+        $results[0] = 'CHECKIN'; //remove me later!
         $request = $this->commonGroundService->getResource($webHook->getRequest());
 
-        switch ($request['status']) {
-            case 'submitted':
-                $results[] = $this->createUser($webHook, $request);
-                array_push($results, $this->sendEmail($webHook, $request, 'welkom'));
-                break;
-            case 'cancelled':
-                $results[] = $this->sendEmail($webHook, $request, 'annulering');
-                break;
-        }
+//        switch ($request['status']) {
+//            case 'submitted':
+//                array_push($results, $this->createUser($webHook, $request));
+//                array_push($results, $this->sendEmail($webHook, $request, 'welkom'));
+//                break;
+//            case 'cancelled':
+//                array_push($results, $this->sendEmail($webHook, $request, 'annulering'));
+//                break;
+//        }
         $webHook->setResult($results);
         $this->em->persist($webHook);
         $this->em->flush();
@@ -160,7 +161,7 @@ class CheckinService
         ];
         $this->commonGroundService->saveResource($user, ['component' => 'uc', 'type' => 'users']);
 
-        $results[] = $this->sendEmail($webHook, $request, 'inlognaam');
+        array_push($results, $this->sendEmail($webHook, $request, 'inlognaam'));
         array_push($results, $this->sendEmail($webHook, $request, 'wachtwoord'));
 
         return $results;

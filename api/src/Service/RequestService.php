@@ -27,11 +27,11 @@ class RequestService
 
         switch ($request['status']) {
             case 'submitted':
-                $results[] = $this->createUser($webHook, $request);
+                array_push($results, $this->createUser($webHook, $request));
                 array_push($results, $this->sendEmail($webHook, $request, 'welkom'));
                 break;
             case 'cancelled':
-                $results[] = $this->sendEmail($webHook, $request, 'annulering');
+                array_push($results, $this->sendEmail($webHook, $request, 'annulering'));
                 break;
         }
         $webHook->setResult($results);
@@ -160,7 +160,7 @@ class RequestService
         ];
         $this->commonGroundService->saveResource($user, ['component' => 'uc', 'type' => 'users']);
 
-        $results[] = $this->sendEmail($webHook, $request, 'inlognaam');
+        array_push($results, $this->sendEmail($webHook, $request, 'inlognaam'));
         array_push($results, $this->sendEmail($webHook, $request, 'wachtwoord'));
 
         return $results;
