@@ -104,13 +104,13 @@ class CheckinService
                 // Create an Organization Logo
                 $logo['name'] = $organizationContact['name'].' Logo';
                 $logo['description'] = $organizationContact['name'].' Logo';
-                $logo['organization'] = $organization['@id'];
+                $logo['organization'] = $this->commonGroundService->cleanUrl(['component' => 'wrc', 'type' => 'organizations', 'id' => $organization['id']]);
                 $this->commonGroundService->saveResource($logo, ['component' => 'wrc', 'type' => 'images']);
 
                 // Create an Organization Favicon
                 $favicon['name'] = 'favicon';
                 $favicon['description'] = $organizationContact['name'].' favicon';
-                $favicon['organization'] = $organization['@id'];
+                $favicon['organization'] = $this->commonGroundService->cleanUrl(['component' => 'wrc', 'type' => 'organizations', 'id' => $organization['id']]);
                 $favicon = $this->commonGroundService->saveResource($favicon, ['component' => 'wrc', 'type' => 'images']);
 
                 // Create an Organization Style
@@ -118,7 +118,7 @@ class CheckinService
                 $style['description'] = 'Huisstijl '.$organizationContact['name'];
                 $style['css'] = '';
                 $style['favicon'] = $favicon['@id'];
-                $style['organization'] = $organization['@id'];
+                $style['organization'] = $this->commonGroundService->cleanUrl(['component' => 'wrc', 'type' => 'organizations', 'id' => $organization['id']]);
                 $this->commonGroundService->saveResource($style, ['component' => 'wrc', 'type' => 'styles']);
 
                 // Create a Place
