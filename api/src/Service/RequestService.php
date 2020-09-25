@@ -166,8 +166,7 @@ class RequestService
             return 'horeca_onderneming_contact does not exist in this request';
         }
 
-        return;
-        // $results;
+//        return $results;
     }
 
     public function createMessage(array $request, $content, $receiver, $attachments = null)
