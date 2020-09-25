@@ -70,35 +70,29 @@ class RequestService
 
     public function createUser($webHook, $request)
     {
-        // Get contact for the new user and get the email for this users username
-        $username = 'undefined@contact.nl';
-        if (key_exists('contact_gegevens', $request['properties'])) {
-            if ($person = $this->commonGroundService->isResource($request['properties']['contact_gegevens'])) {
-                if (key_exists('emails', $person)) {
-                    $username = $person['emails'][0]['email'];
-                }
-            }
-        } else {
-            return 'contact_gegevens does not exist in this request';
-        }
-
-        // Get contact for the new user and get the email for this users username
+        // Get contact person and email for the username
         // Create an Organization in WRC, a Place in LC and a Node in CHIN
-        $organization = [];
+        // Create a user and send username & password emails
         if (key_exists('horeca_onderneming_contact', $request['properties'])) {
             if ($organizationContact = $this->commonGroundService->isResource($request['properties']['horeca_onderneming_contact'])) {
+                $organization = [];
 
-//                // Get contact for the new user and get the email for this users username
-//                if (defined($organizationContact['persons']) and (count($organizationContact['persons']) > 0)) {
-//                    $person = $this->commonGroundService->getResource();
-//                } else {
-//                    return 'Person contact does not exist in this request';
-//                }
+                // Get contact for the new user and get the email for this users username
+                if (key_exists('persons', $organizationContact) and (count($organizationContact['persons']) > 0)) {
+                    $person = $this->commonGroundService->getResource($this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $organizationContact['persons'][0]['id']]));
+                    if (key_exists('emails', $person) and (count($person['emails']) > 0)) {
+                        $username = $person['emails'][0]['email'];
+                    } else {
+                        return 'horeca_onderneming_contact contact person doesn\'t have an email';
+                    }
+                } else {
+                    return 'horeca_onderneming_contact doesn\'t have a contact person';
+                }
 
                 //Create an Organization
                 $organization['name'] = $organizationContact['name'];
                 $organization['description'] = $organizationContact['description'];
-                if (defined($organizationContact['kvk']) and (!empty($organizationContact['kvk']))) {
+                if (key_exists('kvk', $organizationContact) and (!empty($organizationContact['kvk']))) {
                     $organization['chamberOfComerce'] = $organizationContact['kvk'];
                 } elseif (key_exists('kvk', $request['properties'])) {
                     $organization['chamberOfComerce'] = $request['properties']['kvk'];
@@ -142,34 +136,35 @@ class RequestService
                 $accommodation['name'] = 'Tafel 1';
                 $accommodation['description'] = $organizationContact['name'].' Tafel 1';
                 $accommodation['place'] = '/places/'.$place['id'];
-                $this->commonGroundService->saveResource($accommodation, ['component' => 'lc', 'type' => 'accommodations']);
+                $accommodation = $this->commonGroundService->saveResource($accommodation, ['component' => 'lc', 'type' => 'accommodations']);
 
                 // Create a Node
                 $node['name'] = 'Tafel 1';
                 $node['description'] = $organizationContact['name'].' Tafel 1';
                 $node['passthroughUrl'] = 'https://zuid-drecht.nl';
-                $node['place'] = $this->commonGroundService->cleanUrl(['component' => 'lc', 'type' => 'places', 'id' => $place['id']]);
+                $node['accommodation'] = $this->commonGroundService->cleanUrl(['component' => 'lc', 'type' => 'accommodations', 'id' => $accommodation['id']]);
                 $node['organization'] = $this->commonGroundService->cleanUrl(['component' => 'wrc', 'type' => 'organizations', 'id' => $organization['id']]);
                 $this->commonGroundService->saveResource($node, ['component' => 'chin', 'type' => 'nodes']);
+
+                // Create an user in UC
+                $user['organization'] = $this->commonGroundService->cleanUrl(['component' => 'wrc', 'type' => 'organizations', 'id' => $organization['id']]);
+                $user['username'] = $username;
+                $user['password'] = 'test1234';
+                $user['person'] = $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']]);
+                $user['userGroups'] = [
+                    '/groups/4085d475-063b-47ed-98eb-0a7d8b01f3b7',
+                ];
+                $this->commonGroundService->saveResource($user, ['component' => 'uc', 'type' => 'users']);
+
+                //Send username & password emails
+                //array_push($results, $this->sendEmail($webHook, $request, 'inlognaam'));
+                //array_push($results, $this->sendEmail($webHook, $request, 'wachtwoord'));
             } else {
                 return 'horeca_onderneming_contact is not a resource';
             }
         } else {
             return 'horeca_onderneming_contact does not exist in this request';
         }
-
-        // Create an user in UC
-        $user['organization'] = $this->commonGroundService->cleanUrl(['component' => 'wrc', 'type' => 'organizations', 'id' => $organization['id']]);
-        $user['username'] = $username;
-        $user['password'] = 'test1234';
-        $user['person'] = $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']]);
-        $user['userGroups'] = [
-            '/groups/4085d475-063b-47ed-98eb-0a7d8b01f3b7',
-        ];
-        $this->commonGroundService->saveResource($user, ['component' => 'uc', 'type' => 'users']);
-
-        //array_push($results, $this->sendEmail($webHook, $request, 'inlognaam'));
-        //array_push($results, $this->sendEmail($webHook, $request, 'wachtwoord'));
 
         return;// $results;
     }
