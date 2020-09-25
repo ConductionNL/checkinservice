@@ -157,7 +157,7 @@ class CheckinService
                 ];
                 $this->commonGroundService->saveResource($user, ['component' => 'uc', 'type' => 'users']);
 
-                //Send username & password emails
+            //Send username & password emails
 //                array_push($results, $this->sendEmail($webHook, $request, 'inlognaam'));
 //                array_push($results, $this->sendEmail($webHook, $request, 'wachtwoord'));
             } else {
@@ -167,7 +167,8 @@ class CheckinService
             return 'horeca_onderneming_contact does not exist in this request';
         }
 
-        return;// $results;
+        return;
+        // $results;
     }
 
     public function createMessage(array $request, $content, $receiver, $attachments = null)
