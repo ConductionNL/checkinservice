@@ -27,8 +27,8 @@ class RequestService
 
         switch ($request['status']) {
             case 'submitted':
-                array_push($results, $this->createUser($webHook, $request));
-//                array_push($results, $this->sendEmail($webHook, $request, 'welkom'));
+//                array_push($results, $this->createUser($webHook, $request));
+                array_push($results, $this->sendEmail($webHook, $request, 'welkom'));
                 break;
             case 'cancelled':
                 array_push($results, $this->sendEmail($webHook, $request, 'annulering'));
@@ -61,9 +61,9 @@ class RequestService
         if (key_exists('horeca_onderneming_contact', $request['properties'])) {
             if ($organizationContact = $this->commonGroundService->isResource($request['properties']['horeca_onderneming_contact'])) {
                 if (key_exists('emails', $organizationContact) and (count($organizationContact['emails']) > 0)) {
-                    $receiver = $organizationContact;
+                    $receiver = $organizationContact['@id'];
                 } elseif (key_exists('persons', $organizationContact) and (count($organizationContact['persons']) > 0)) {
-                    $receiver = $this->commonGroundService->getResource($this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $organizationContact['persons'][0]['id']]));
+                    $receiver = $organizationContact['persons'][0]['@id'];
                 } else {
                     return 'No email receiver found [horeca_onderneming_contact does not have a email or contact person]';
                 }
@@ -193,7 +193,9 @@ class RequestService
         }
 
         $message = [];
-        $message['service'] = $this->commonGroundService->getResourceList(['component'=>'bs', 'type'=>'services'], "type=mailer&organization=$serviceOrganization")['hydra:member'][0]['@id'];
+        // Tijdelijke oplossing voor juiste $message['service'] meegeven, was eerst dit hier onder, waar in de query op de organization check het mis gaat:
+        //$message['service'] = $this->commonGroundService->getResourceList(['component'=>'bs', 'type'=>'services'], "type=mailer&organization=$serviceOrganization")['hydra:member'][0]['@id'];
+        $message['service'] = 'https://dev.zuid-drecht.nl/api/v1/bs/services/1541d15b-7de3-4a1a-a437-80079e4a14e0';
         $message['status'] = 'queued';
         $organization = $this->commonGroundService->getResource($request['organization']);
 
