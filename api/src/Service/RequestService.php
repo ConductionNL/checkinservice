@@ -58,10 +58,20 @@ class RequestService
                 $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-annulering"])['@id'];
                 break;
         }
-        if (key_exists('contact_gegevens', $request['properties'])) {
-            $receiver = $request['properties']['contact_gegevens'];
+        if (key_exists('horeca_onderneming_contact', $request['properties'])) {
+            if ($organizationContact = $this->commonGroundService->isResource($request['properties']['horeca_onderneming_contact'])) {
+                if (key_exists('emails', $organizationContact) and (count($organizationContact['emails']) > 0)) {
+                    $receiver = $organizationContact;
+                } elseif (key_exists('persons', $organizationContact) and (count($organizationContact['persons']) > 0)) {
+                    $receiver = $this->commonGroundService->getResource($this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $organizationContact['persons'][0]['id']]));
+                } else {
+                    return 'No email receiver found [horeca_onderneming_contact does not have a email or contact person]';
+                }
+            } else {
+                return 'No email receiver found [horeca_onderneming_contact is not a resource]';
+            }
         } else {
-            return 'Geen ontvanger gevonden';
+            return 'No email receiver found [horeca_onderneming_contact does not exist]';
         }
         $message = $this->createMessage($request, $content, $receiver);
 
@@ -77,16 +87,20 @@ class RequestService
             if ($organizationContact = $this->commonGroundService->isResource($request['properties']['horeca_onderneming_contact'])) {
                 $organization = [];
 
-                // Get contact for the new user and get the email for this users username
+                // Get contact for the new user
                 if (key_exists('persons', $organizationContact) and (count($organizationContact['persons']) > 0)) {
                     $person = $this->commonGroundService->getResource($this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $organizationContact['persons'][0]['id']]));
-                    if (key_exists('emails', $person) and (count($person['emails']) > 0)) {
-                        $username = $person['emails'][0]['email'];
-                    } else {
-                        return 'horeca_onderneming_contact contact person doesn\'t have an email';
-                    }
                 } else {
-                    return 'horeca_onderneming_contact doesn\'t have a contact person';
+                    return 'horeca_onderneming_contact does not have a contact person';
+                }
+
+                // Get the email for this users username
+                if (key_exists('emails', $organizationContact) and (count($organizationContact['emails']) > 0)) {
+                    $username = $organizationContact['emails'][0]['email'];
+                } elseif (key_exists('emails', $person) and (count($person['emails']) > 0)) {
+                    $username = $person['emails'][0]['email'];
+                } else {
+                    return 'horeca_onderneming_contact and the contact person do not not have an email';
                 }
 
                 //Create an Organization
