@@ -28,10 +28,10 @@ class RequestService
         switch ($request['status']) {
             case 'submitted':
                 array_push($results, $this->createUser($webHook, $request));
-//                array_push($results, $this->sendEmail($webHook, $request, 'welkom'));
+                array_push($results, $this->sendEmail($webHook, $request, 'welkom'));
                 break;
             case 'cancelled':
-//                array_push($results, $this->sendEmail($webHook, $request, 'annulering'));
+                array_push($results, $this->sendEmail($webHook, $request, 'annulering'));
                 break;
         }
         $webHook->setResult($results);
@@ -170,9 +170,9 @@ class RequestService
                 ];
                 $this->commonGroundService->saveResource($user, ['component' => 'uc', 'type' => 'users']);
 
-            //Send username & password emails
-//                array_push($results, $this->sendEmail($webHook, $request, 'inlognaam'));
-//                array_push($results, $this->sendEmail($webHook, $request, 'wachtwoord'));
+                //Send username & password emails
+                array_push($results, $this->sendEmail($webHook, $request, 'inlognaam'));
+                array_push($results, $this->sendEmail($webHook, $request, 'wachtwoord'));
             } else {
                 return 'organization is not a resource';
             }
@@ -195,7 +195,7 @@ class RequestService
         $message = [];
         // Tijdelijke oplossing voor juiste $message['service'] meegeven, was eerst dit hier onder, waar in de query op de organization check het mis gaat:
         //$message['service'] = $this->commonGroundService->getResourceList(['component'=>'bs', 'type'=>'services'], "type=mailer&organization=$serviceOrganization")['hydra:member'][0]['@id'];
-        $message['service'] = 'https://dev.zuid-drecht.nl/api/v1/bs/services/1541d15b-7de3-4a1a-a437-80079e4a14e0';
+        $message['service'] = '/services/1541d15b-7de3-4a1a-a437-80079e4a14e0';
         $message['status'] = 'queued';
         $organization = $this->commonGroundService->getResource($request['organization']);
 
