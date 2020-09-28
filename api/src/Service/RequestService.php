@@ -27,11 +27,11 @@ class RequestService
 
         switch ($request['status']) {
             case 'submitted':
-//                array_push($results, $this->createUser($webHook, $request));
-                array_push($results, $this->sendEmail($webHook, $request, 'welkom'));
+                array_push($results, $this->createUser($webHook, $request));
+//                array_push($results, $this->sendEmail($webHook, $request, 'welkom'));
                 break;
             case 'cancelled':
-                array_push($results, $this->sendEmail($webHook, $request, 'annulering'));
+//                array_push($results, $this->sendEmail($webHook, $request, 'annulering'));
                 break;
         }
         $webHook->setResult($results);
