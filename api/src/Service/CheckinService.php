@@ -74,8 +74,8 @@ class CheckinService
         // Get contact person and email for the username
         // Create an Organization in WRC, a Place in LC and a Node in CHIN
         // Create a user and send username & password emails
-        if (key_exists('horeca_onderneming_contact', $request['properties'])) {
-            if ($organizationContact = $this->commonGroundService->isResource($request['properties']['horeca_onderneming_contact'])) {
+        if (key_exists('organization', $request['properties'])) {
+            if ($organizationContact = $this->commonGroundService->isResource($request['properties']['organization'])) {
                 $organization = [];
 
                 // Get contact for the new user and get the email for this users username
@@ -84,10 +84,10 @@ class CheckinService
                     if (key_exists('emails', $person) and (count($person['emails']) > 0)) {
                         $username = $person['emails'][0]['email'];
                     } else {
-                        return 'horeca_onderneming_contact contact person doesn\'t have an email';
+                        return 'organization contact person doesn\'t have an email';
                     }
                 } else {
-                    return 'horeca_onderneming_contact doesn\'t have a contact person';
+                    return 'organization doesn\'t have a contact person';
                 }
 
                 //Create an Organization
@@ -161,10 +161,10 @@ class CheckinService
 //                array_push($results, $this->sendEmail($webHook, $request, 'inlognaam'));
 //                array_push($results, $this->sendEmail($webHook, $request, 'wachtwoord'));
             } else {
-                return 'horeca_onderneming_contact is not a resource';
+                return 'organization is not a resource';
             }
         } else {
-            return 'horeca_onderneming_contact does not exist in this request';
+            return 'organization does not exist in this request';
         }
 
 //        return $results;
