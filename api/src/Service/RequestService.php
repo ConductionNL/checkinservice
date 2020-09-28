@@ -27,8 +27,8 @@ class RequestService
 
         switch ($request['status']) {
             case 'submitted':
-                array_push($results, $this->createUser($webHook, $request));
-//                array_push($results, $this->sendEmail($webHook, $request, 'welkom'));
+//                array_push($results, $this->createUser($webHook, $request));
+                array_push($results, $this->sendEmail($webHook, $request, 'welkom'));
                 break;
             case 'cancelled':
                 array_push($results, $this->sendEmail($webHook, $request, 'annulering'));
@@ -58,20 +58,20 @@ class RequestService
                 $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-annulering"])['@id'];
                 break;
         }
-        if (key_exists('horeca_onderneming_contact', $request['properties'])) {
-            if ($organizationContact = $this->commonGroundService->isResource($request['properties']['horeca_onderneming_contact'])) {
+        if (key_exists('organization', $request['properties'])) {
+            if ($organizationContact = $this->commonGroundService->isResource($request['properties']['organization'])) {
                 if (key_exists('emails', $organizationContact) and (count($organizationContact['emails']) > 0)) {
-                    $receiver = $organizationContact;
+                    $receiver = $organizationContact['@id'];
                 } elseif (key_exists('persons', $organizationContact) and (count($organizationContact['persons']) > 0)) {
-                    $receiver = $this->commonGroundService->getResource($this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $organizationContact['persons'][0]['id']]));
+                    $receiver = $organizationContact['persons'][0]['@id'];
                 } else {
-                    return 'No email receiver found [horeca_onderneming_contact does not have a email or contact person]';
+                    return 'No email receiver found [organization does not have a email or contact person]';
                 }
             } else {
-                return 'No email receiver found [horeca_onderneming_contact is not a resource]';
+                return 'No email receiver found [organization is not a resource]';
             }
         } else {
-            return 'No email receiver found [horeca_onderneming_contact does not exist]';
+            return 'No email receiver found [organization does not exist]';
         }
         $message = $this->createMessage($request, $content, $receiver);
 
@@ -83,15 +83,15 @@ class RequestService
         // Get contact person and email for the username
         // Create an Organization in WRC, a Place in LC and a Node in CHIN
         // Create a user and send username & password emails
-        if (key_exists('horeca_onderneming_contact', $request['properties'])) {
-            if ($organizationContact = $this->commonGroundService->isResource($request['properties']['horeca_onderneming_contact'])) {
+        if (key_exists('organization', $request['properties'])) {
+            if ($organizationContact = $this->commonGroundService->isResource($request['properties']['organization'])) {
                 $organization = [];
 
                 // Get contact for the new user
                 if (key_exists('persons', $organizationContact) and (count($organizationContact['persons']) > 0)) {
                     $person = $this->commonGroundService->getResource($this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $organizationContact['persons'][0]['id']]));
                 } else {
-                    return 'horeca_onderneming_contact does not have a contact person';
+                    return 'organization does not have a contact person';
                 }
 
                 // Get the email for this users username
@@ -100,7 +100,7 @@ class RequestService
                 } elseif (key_exists('emails', $person) and (count($person['emails']) > 0)) {
                     $username = $person['emails'][0]['email'];
                 } else {
-                    return 'horeca_onderneming_contact and the contact person do not not have an email';
+                    return 'organization and the contact person do not not have an email';
                 }
 
                 //Create an Organization
@@ -174,10 +174,10 @@ class RequestService
 //                array_push($results, $this->sendEmail($webHook, $request, 'inlognaam'));
 //                array_push($results, $this->sendEmail($webHook, $request, 'wachtwoord'));
             } else {
-                return 'horeca_onderneming_contact is not a resource';
+                return 'organization is not a resource';
             }
         } else {
-            return 'horeca_onderneming_contact does not exist in this request';
+            return 'organization does not exist in this request';
         }
 
 //        return $results;
@@ -193,7 +193,9 @@ class RequestService
         }
 
         $message = [];
-        $message['service'] = $this->commonGroundService->getResourceList(['component'=>'bs', 'type'=>'services'], "type=mailer&organization=$serviceOrganization")['hydra:member'][0]['@id'];
+        // Tijdelijke oplossing voor juiste $message['service'] meegeven, was eerst dit hier onder, waar in de query op de organization check het mis gaat:
+        //$message['service'] = $this->commonGroundService->getResourceList(['component'=>'bs', 'type'=>'services'], "type=mailer&organization=$serviceOrganization")['hydra:member'][0]['@id'];
+        $message['service'] = 'https://dev.zuid-drecht.nl/api/v1/bs/services/1541d15b-7de3-4a1a-a437-80079e4a14e0';
         $message['status'] = 'queued';
         $organization = $this->commonGroundService->getResource($request['organization']);
 
