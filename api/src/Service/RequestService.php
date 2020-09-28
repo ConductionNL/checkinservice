@@ -59,16 +59,13 @@ class RequestService
                 break;
         }
         if (key_exists('organization', $request['properties'])) {
-            if ($organizationContact = $this->commonGroundService->isResource($request['properties']['organization'])) {
-                if (key_exists('emails', $organizationContact) and (count($organizationContact['emails']) > 0)) {
-                    $receiver = $organizationContact['@id'];
-                } elseif (key_exists('persons', $organizationContact) and (count($organizationContact['persons']) > 0)) {
-                    $receiver = $organizationContact['persons'][0]['@id'];
-                } else {
-                    return 'No email receiver found [organization does not have a email or contact person]';
-                }
+            $organizationContact = $request['properties']['organization'];
+            if (key_exists('emails', $organizationContact) and (count($organizationContact['emails']) > 0)) {
+                $receiver = $organizationContact['@id'];
+            } elseif (key_exists('persons', $organizationContact) and (count($organizationContact['persons']) > 0)) {
+                $receiver = $organizationContact['persons'][0]['@id'];
             } else {
-                return 'No email receiver found [organization is not a resource]';
+                return 'No email receiver found [organization does not have a email or contact person]';
             }
         } else {
             return 'No email receiver found [organization does not exist]';
@@ -84,98 +81,93 @@ class RequestService
         // Create an Organization in WRC, a Place in LC and a Node in CHIN
         // Create a user and send username & password emails
         if (key_exists('organization', $request['properties'])) {
-            if ($organizationContact = $this->commonGroundService->isResource($request['properties']['organization'])) {
-                $organization = [];
+            $organizationContact = $request['properties']['organization'];
+            $organization = [];
 
-                // Get contact for the new user
-                if (key_exists('persons', $organizationContact) and (count($organizationContact['persons']) > 0)) {
-                    $person = $this->commonGroundService->getResource($this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $organizationContact['persons'][0]['id']]));
-                } else {
-                    return 'organization does not have a contact person';
-                }
-
-                // Get the email for this users username
-                if (key_exists('emails', $organizationContact) and (count($organizationContact['emails']) > 0)) {
-                    $username = $organizationContact['emails'][0]['email'];
-                } elseif (key_exists('emails', $person) and (count($person['emails']) > 0)) {
-                    $username = $person['emails'][0]['email'];
-                } else {
-                    return 'organization and the contact person do not not have an email';
-                }
-
-                //Create an Organization
-                $organization['name'] = $organizationContact['name'];
-                $organization['description'] = $organizationContact['description'];
-                if (key_exists('kvk', $organizationContact) and (!empty($organizationContact['kvk']))) {
-                    $organization['chamberOfComerce'] = $organizationContact['kvk'];
-                } elseif (key_exists('kvk', $request['properties'])) {
-                    $organization['chamberOfComerce'] = $request['properties']['kvk'];
-                } else {
-                    $organization['chamberOfComerce'] = '';
-                }
-                $organization['rsin'] = '';
-                $organization = $this->commonGroundService->saveResource($organization, ['component' => 'wrc', 'type' => 'organizations']);
-
-                // Create an Organization Logo
-                $logo['name'] = $organizationContact['name'].' Logo';
-                $logo['description'] = $organizationContact['name'].' Logo';
-                $logo['organization'] = '/organizations/'.$organization['id'];
-                $this->commonGroundService->saveResource($logo, ['component' => 'wrc', 'type' => 'images']);
-
-                // Create an Organization Favicon
-                $favicon['name'] = 'favicon';
-                $favicon['description'] = $organizationContact['name'].' favicon';
-                $favicon['organization'] = '/organizations/'.$organization['id'];
-                $favicon = $this->commonGroundService->saveResource($favicon, ['component' => 'wrc', 'type' => 'images']);
-
-                // Create an Organization Style
-                $style['name'] = $organizationContact['name'];
-                $style['description'] = 'Huisstijl '.$organizationContact['name'];
-                $style['css'] = '';
-                $style['favicon'] = '/images/'.$favicon['id'];
-                $style['organization'] = '/organizations/'.$organization['id'];
-                $this->commonGroundService->saveResource($style, ['component' => 'wrc', 'type' => 'styles']);
-
-                // Create a Place
-                $place['name'] = $organizationContact['name'];
-                $place['description'] = $organizationContact['description'];
-                $place['publicAccess'] = true;
-                $place['smokingAllowed'] = false;
-                $place['openingTime'] = '16:00';
-                $place['closingTime'] = '1:00';
-                $place['organization'] = $this->commonGroundService->cleanUrl(['component' => 'wrc', 'type' => 'organizations', 'id' => $organization['id']]);
-                $place = $this->commonGroundService->saveResource($place, ['component' => 'lc', 'type' => 'places']);
-
-                // Create a (example) Place Accommodation
-                $accommodation['name'] = 'Tafel 1';
-                $accommodation['description'] = $organizationContact['name'].' Tafel 1';
-                $accommodation['place'] = '/places/'.$place['id'];
-                $accommodation = $this->commonGroundService->saveResource($accommodation, ['component' => 'lc', 'type' => 'accommodations']);
-
-                // Create a Node
-                $node['name'] = 'Tafel 1';
-                $node['description'] = $organizationContact['name'].' Tafel 1';
-                $node['passthroughUrl'] = 'https://zuid-drecht.nl';
-                $node['accommodation'] = $this->commonGroundService->cleanUrl(['component' => 'lc', 'type' => 'accommodations', 'id' => $accommodation['id']]);
-                $node['organization'] = $this->commonGroundService->cleanUrl(['component' => 'wrc', 'type' => 'organizations', 'id' => $organization['id']]);
-                $this->commonGroundService->saveResource($node, ['component' => 'chin', 'type' => 'nodes']);
-
-                // Create an user in UC
-                $user['organization'] = $this->commonGroundService->cleanUrl(['component' => 'wrc', 'type' => 'organizations', 'id' => $organization['id']]);
-                $user['username'] = $username;
-                $user['password'] = 'test1234';
-                $user['person'] = $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']]);
-                $user['userGroups'] = [
-                    '/groups/4085d475-063b-47ed-98eb-0a7d8b01f3b7',
-                ];
-                $this->commonGroundService->saveResource($user, ['component' => 'uc', 'type' => 'users']);
-
-            //Send username & password emails
-//                array_push($results, $this->sendEmail($webHook, $request, 'inlognaam'));
-//                array_push($results, $this->sendEmail($webHook, $request, 'wachtwoord'));
+            // Get contact for the new user
+            if (key_exists('persons', $organizationContact) and (count($organizationContact['persons']) > 0)) {
+                $person = $this->commonGroundService->getResource($this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $organizationContact['persons'][0]['id']]));
             } else {
-                return 'organization is not a resource';
+                return 'organization does not have a contact person';
             }
+
+            // Get the email for this users username
+            if (key_exists('emails', $organizationContact) and (count($organizationContact['emails']) > 0)) {
+                $username = $organizationContact['emails'][0]['email'];
+            } elseif (key_exists('emails', $person) and (count($person['emails']) > 0)) {
+                $username = $person['emails'][0]['email'];
+            } else {
+                return 'organization and the contact person do not not have an email';
+            }
+
+            //Create an Organization
+            $organization['name'] = $organizationContact['name'];
+            $organization['description'] = $organizationContact['description'];
+            if (key_exists('kvk', $organizationContact) and (!empty($organizationContact['kvk']))) {
+                $organization['chamberOfComerce'] = $organizationContact['kvk'];
+            } else {
+                $organization['chamberOfComerce'] = '';
+            }
+            $organization['rsin'] = '';
+            $organization = $this->commonGroundService->saveResource($organization, ['component' => 'wrc', 'type' => 'organizations']);
+
+            // Create an Organization Logo
+            $logo['name'] = $organizationContact['name'].' Logo';
+            $logo['description'] = $organizationContact['name'].' Logo';
+            $logo['organization'] = '/organizations/'.$organization['id'];
+            $this->commonGroundService->saveResource($logo, ['component' => 'wrc', 'type' => 'images']);
+
+            // Create an Organization Favicon
+            $favicon['name'] = 'favicon';
+            $favicon['description'] = $organizationContact['name'].' favicon';
+            $favicon['organization'] = '/organizations/'.$organization['id'];
+            $favicon = $this->commonGroundService->saveResource($favicon, ['component' => 'wrc', 'type' => 'images']);
+
+            // Create an Organization Style
+            $style['name'] = $organizationContact['name'];
+            $style['description'] = 'Huisstijl '.$organizationContact['name'];
+            $style['css'] = '';
+            $style['favicon'] = '/images/'.$favicon['id'];
+            $style['organization'] = '/organizations/'.$organization['id'];
+            $this->commonGroundService->saveResource($style, ['component' => 'wrc', 'type' => 'styles']);
+
+            // Create a Place
+            $place['name'] = $organizationContact['name'];
+            $place['description'] = $organizationContact['description'];
+            $place['publicAccess'] = true;
+            $place['smokingAllowed'] = false;
+            $place['openingTime'] = '16:00';
+            $place['closingTime'] = '1:00';
+            $place['organization'] = $this->commonGroundService->cleanUrl(['component' => 'wrc', 'type' => 'organizations', 'id' => $organization['id']]);
+            $place = $this->commonGroundService->saveResource($place, ['component' => 'lc', 'type' => 'places']);
+
+            // Create a (example) Place Accommodation
+            $accommodation['name'] = 'Tafel 1';
+            $accommodation['description'] = $organizationContact['name'].' Tafel 1';
+            $accommodation['place'] = '/places/'.$place['id'];
+            $accommodation = $this->commonGroundService->saveResource($accommodation, ['component' => 'lc', 'type' => 'accommodations']);
+
+            // Create a Node
+            $node['name'] = 'Tafel 1';
+            $node['description'] = $organizationContact['name'].' Tafel 1';
+            $node['passthroughUrl'] = 'https://zuid-drecht.nl';
+            $node['accommodation'] = $this->commonGroundService->cleanUrl(['component' => 'lc', 'type' => 'accommodations', 'id' => $accommodation['id']]);
+            $node['organization'] = $this->commonGroundService->cleanUrl(['component' => 'wrc', 'type' => 'organizations', 'id' => $organization['id']]);
+            $this->commonGroundService->saveResource($node, ['component' => 'chin', 'type' => 'nodes']);
+
+            // Create an user in UC
+            $user['organization'] = $this->commonGroundService->cleanUrl(['component' => 'wrc', 'type' => 'organizations', 'id' => $organization['id']]);
+            $user['username'] = $username;
+            $user['password'] = 'test1234';
+            $user['person'] = $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']]);
+            $user['userGroups'] = [
+                '/groups/4085d475-063b-47ed-98eb-0a7d8b01f3b7',
+            ];
+            $this->commonGroundService->saveResource($user, ['component' => 'uc', 'type' => 'users']);
+
+        //Send username & password emails
+//            array_push($results, $this->sendEmail($webHook, $request, 'inlognaam'));
+//            array_push($results, $this->sendEmail($webHook, $request, 'wachtwoord'));
         } else {
             return 'organization does not exist in this request';
         }
