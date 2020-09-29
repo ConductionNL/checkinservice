@@ -88,7 +88,7 @@ class RequestService
             if ($organizationContact = $this->commonGroundService->isResource($request['properties']['organization'])) {
 
                 $request['status'] = 'inProgress';
-                $request =  $this->commonGroundService->saveResource($request);
+                $request =  $this->commonGroundService->saveResource($request, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
 
                 $acountData= [];
                 $organization = [];
@@ -190,7 +190,7 @@ class RequestService
 
                 //Send username & password emails
                 $request['status'] = 'processed';
-                $request =  $this->commonGroundService->saveResource($request);
+                $request =  $this->commonGroundService->saveResource($request, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
 
                 array_push($results, $this->sendEmail($webHook, $request, $acountData, 'welkom'));
                 array_push($results, $this->sendEmail($webHook, $request, $user, 'password'));
@@ -226,6 +226,7 @@ class RequestService
         if ($organization['contact']) {
             $message['sender'] = $organization['contact'];
         }
+
         // if we don't have that we are going to self send te message
         $message['reciever'] = $receiver;
         if (!key_exists('sender', $message)) {
