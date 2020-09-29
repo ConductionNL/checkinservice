@@ -41,7 +41,7 @@ class RequestService
         return $webHook;
     }
 
-    public function sendEmail($webHook, $request, $emailType)
+    public function sendEmail($webHook, $request, $data,  $emailType)
     {
         $content = [];
         switch ($emailType) {
@@ -55,7 +55,8 @@ class RequestService
                 $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'templates', 'id'=>"4016c529-cf9e-415e-abb1-2aba8bfa539e"]);
                 break;
         }
-        /* waarom deze error catch
+
+        // determining the reciever
         if (key_exists('organization', $request['properties'])) {
             if ($organizationContact = $this->commonGroundService->isResource($request['properties']['organization'])) {
                 if (key_exists('emails', $organizationContact) and (count($organizationContact['emails']) > 0)) {
@@ -71,8 +72,9 @@ class RequestService
         } else {
             return 'No email receiver found [organization does not exist]';
         }
-        */
-        $message = $this->createMessage($request, $content, $receiver);
+
+        // Loading the message
+        $message = $this->createMessage($data, $request, $content, $receiver);
 
         return $this->commonGroundService->createResource($message, ['component'=>'bs', 'type'=>'messages'])['@id'];
     }
@@ -184,8 +186,8 @@ class RequestService
 
                 //Send username & password emails
 
-                array_push($results, $this->sendEmail($webHook, $acountData, 'welkom'));
-                array_push($results, $this->sendEmail($webHook, $user, 'password'));
+                array_push($results, $this->sendEmail($webHook, $request, $acountData, 'welkom'));
+                array_push($results, $this->sendEmail($webHook, $request, $user, 'password'));
             } else {
                 return 'organization is not a resource';
             }
@@ -196,7 +198,7 @@ class RequestService
 //        return $results;
     }
 
-    public function createMessage(array $request, $content, $receiver, $attachments = null)
+    public function createMessage(array $data, array $request, $content, $receiver, $attachments = null)
     {
         $application = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}"]);
         if (key_exists('@id', $application['organization'])) {
@@ -206,21 +208,27 @@ class RequestService
         }
 
         $message = [];
+
         // Tijdelijke oplossing voor juiste $message['service'] meegeven, was eerst dit hier onder, waar in de query op de organization check het mis gaat:
         //$message['service'] = $this->commonGroundService->getResourceList(['component'=>'bs', 'type'=>'services'], "type=mailer&organization=$serviceOrganization")['hydra:member'][0]['@id'];
+
         $message['service'] = '/services/1541d15b-7de3-4a1a-a437-80079e4a14e0';
         $message['status'] = 'queued';
-        $organization = $this->commonGroundService->getResource($request['organization']);
 
+        $organization = $this->commonGroundService->getResource($request['organization']);
+        // lets use the organization as sender
         if ($organization['contact']) {
             $message['sender'] = $organization['contact'];
         }
+        // if we don't have that we are going to self send te message
         $message['reciever'] = $receiver;
         if (!key_exists('sender', $message)) {
             $message['sender'] = $receiver;
         }
 
+
         $message['data'] = ['resource'=>$request, 'sender'=>$organization, 'receiver'=>$this->commonGroundService->getResource($message['reciever'])];
+        $message['data'] = array_merge($message['data'], $data);  // lets accept contextual data from de bl
         $message['content'] = $content;
         if ($attachments) {
             $message['attachments'] = $attachments;
