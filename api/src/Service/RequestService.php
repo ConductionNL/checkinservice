@@ -159,10 +159,13 @@ class RequestService
                 $node['organization'] = $this->commonGroundService->cleanUrl(['component' => 'wrc', 'type' => 'organizations', 'id' => $organization['id']]);
                 $this->commonGroundService->saveResource($node, ['component' => 'chin', 'type' => 'nodes']);
 
+                // Lets create a password
+                $password = bin2hex(openssl_random_pseudo_bytes(4));
+
                 // Create an user in UC
                 $user['organization'] = $this->commonGroundService->cleanUrl(['component' => 'wrc', 'type' => 'organizations', 'id' => $organization['id']]);
                 $user['username'] = $username;
-                $user['password'] = 'test1234';
+                $user['password'] = $password;
                 $user['person'] = $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']]);
                 $user['userGroups'] = [
                     '/groups/4085d475-063b-47ed-98eb-0a7d8b01f3b7',
