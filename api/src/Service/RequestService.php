@@ -27,11 +27,11 @@ class RequestService
 
         switch ($request['status']) {
             case 'submitted':
-                array_push($results, $this->createUser($webHook, $request));
-                array_push($results, $this->sendEmail($webHook, $request, 'welkom'));
+                array_push($results, $this->proccesRequest($webHook, $request));
+                //array_push($results, $this->sendEmail($webHook, $request, 'welkom'));
                 break;
             case 'cancelled':
-                array_push($results, $this->sendEmail($webHook, $request, 'annulering'));
+                //array_push($results, $this->sendEmail($webHook, $request, 'annulering'));
                 break;
         }
         $webHook->setResult($results);
@@ -79,13 +79,17 @@ class RequestService
         return $this->commonGroundService->createResource($message, ['component'=>'bs', 'type'=>'messages'])['@id'];
     }
 
-    public function createUser($webHook, $request)
+    public function proccesRequest($webHook, $request)
     {
         // Get contact person and email for the username
         // Create an Organization in WRC, a Place in LC and a Node in CHIN
         // Create a user and send username & password emails
         if (key_exists('organization', $request['properties'])) {
             if ($organizationContact = $this->commonGroundService->isResource($request['properties']['organization'])) {
+
+                $request['status'] = 'inProgress';
+                $request =  $this->commonGroundService->saveResource($request);
+
                 $acountData= [];
                 $organization = [];
 
@@ -185,6 +189,8 @@ class RequestService
                 $user['password'] = $password;
 
                 //Send username & password emails
+                $request['status'] = 'processed';
+                $request =  $this->commonGroundService->saveResource($request);
 
                 array_push($results, $this->sendEmail($webHook, $request, $acountData, 'welkom'));
                 array_push($results, $this->sendEmail($webHook, $request, $user, 'password'));
