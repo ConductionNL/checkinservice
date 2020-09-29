@@ -27,7 +27,7 @@ class RequestService
 
         switch ($request['status']) {
             case 'submitted':
-                array_push($results, $this->proccesRequest($webHook, $request));
+                array_push($results, $this->processRequest($webHook, $request));
                 //array_push($results, $this->sendEmail($webHook, $request, 'welkom'));
                 break;
             case 'cancelled':
@@ -79,8 +79,9 @@ class RequestService
         return $this->commonGroundService->createResource($message, ['component'=>'bs', 'type'=>'messages'])['@id'];
     }
 
-    public function proccesRequest($webHook, $request)
+    public function processRequest($webHook, $request)
     {
+        $results = [];
         // Get contact person and email for the username
         // Create an Organization in WRC, a Place in LC and a Node in CHIN
         // Create a user and send username & password emails
@@ -201,7 +202,7 @@ class RequestService
             return 'organization does not exist in this request';
         }
 
-//        return $results;
+        return $results;
     }
 
     public function createMessage(array $data, array $request, $content, $receiver, $attachments = null)
@@ -231,7 +232,6 @@ class RequestService
         if (!key_exists('sender', $message)) {
             $message['sender'] = $receiver;
         }
-
 
         $message['data'] = ['resource'=>$request, 'sender'=>$organization, 'receiver'=>$this->commonGroundService->getResource($message['reciever'])];
         $message['data'] = array_merge($message['data'], $data);  // lets accept contextual data from de bl
