@@ -38,18 +38,24 @@ class CheckinService
     {
         $content = [];
         switch ($emailType) {
-            case 'welkom':
-                $content = $this->commonGroundService->cleanUrl(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-welkom"])['@id'];
+            //wrc templates bestaan nog niet:
+            case 'highCheckinCount':
+                //$content = $this->commonGroundService->cleanUrl(['component'=>'wrc', 'type'=>'templates', 'id'=>'cdad2591-c288-4f54-8fe5-727f67e65949']);
+                break;
+            case 'maxCheckinCount':
+                //$content = $this->commonGroundService->cleanUrl(['component'=>'wrc', 'type'=>'templates', 'id'=>'f073f5b5-2853-4cca-8de4-9889f21aa6a2']);
                 break;
         }
+
+        // determining the receiver
         if ($organization = $this->commonGroundService->isResource($checkin['node']['organization'])) {
             if (key_exists('contact', $organization)) {
                 $receiver = $organization['contact'];
             } else {
-                return 'Geen ontvanger gevonden [organization van de node heeft geen contact]';
+                return 'No email receiver found [organization of the node has no contact]';
             }
         } else {
-            return 'Geen ontvanger gevonden [organization van de node is geen resource]';
+            return 'No email receiver found [organization of the node is no resource]';
         }
         $message = $this->createMessage($data, $checkin, $content, $receiver);
 
@@ -63,7 +69,7 @@ class CheckinService
 
         if ($accommodation = $this->commonGroundService->isResource($node['accommodation'])) {
             if (key_exists('maximumAttendeeCapacity', $accommodation)) {
-                $numberOfCheckins = count($this->commonGroundService->getResourceList(['component'=>'chin', 'type'=>'checkins'], ['node.accommodation'=>$node['accommodation']])['hydra:member']);
+                $numberOfCheckins = 100;//count($this->commonGroundService->getResourceList(['component'=>'chin', 'type'=>'checkins'], ['node.accommodation'=>$node['accommodation']])['hydra:member']);
                 $maximumAttendeeCapacity = $accommodation['maximumAttendeeCapacity'];
 
                 $percentage = round($numberOfCheckins / $maximumAttendeeCapacity * 100, 1, PHP_ROUND_HALF_UP);
@@ -72,7 +78,14 @@ class CheckinService
                 $results['maximumAttendeeCapacity'] = $maximumAttendeeCapacity;
                 $results['percentage'] = $percentage;
 
-                //array_push($results, $this->sendEmail($webHook, $checkin, $accommodation, ''))
+                // Hier moet nog gezorgd worden dat dit niet bij elke checkin vanaf 80% / 100% blijft gebeuren!
+                if ($percentage >= 100) {
+                    //array_push($results, $this->sendEmail($webHook, $checkin, $accommodation, 'maxCheckinCount'));
+                    array_push($results, '100+');
+                } elseif ($percentage >= 80) {
+                    //array_push($results, $this->sendEmail($webHook, $checkin, $accommodation, 'highCheckinCount'));
+                    array_push($results, '80+');
+                }
             } else {
                 return 'De accommodation van de node heeft geen maximumAttendeeCapacity';
             }
