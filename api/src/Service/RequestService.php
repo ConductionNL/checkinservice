@@ -187,13 +187,14 @@ class RequestService
                 $user = $this->commonGroundService->saveResource($user, ['component' => 'uc', 'type' => 'users']);
                 $acountData['user'] = $user;
                 $user['password'] = $password;
+                $userData = ['user'=>$user];
 
                 //Send username & password emails
                 $request['status'] = 'processed';
                 $request =  $this->commonGroundService->saveResource($request, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
 
                 array_push($results, $this->sendEmail($webHook, $request, $acountData, 'welkom'));
-                array_push($results, $this->sendEmail($webHook, $request, $user, 'password'));
+                array_push($results, $this->sendEmail($webHook, $request, $userData, 'password'));
             } else {
                 return 'organization is not a resource';
             }
@@ -203,6 +204,8 @@ class RequestService
 
 //        return $results;
     }
+
+
 
     public function createMessage(array $data, array $request, $content, $receiver, $attachments = null)
     {
