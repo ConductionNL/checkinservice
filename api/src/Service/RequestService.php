@@ -27,11 +27,10 @@ class RequestService
 
         switch ($request['status']) {
             case 'submitted':
-                array_push($results, $this->proccesRequest($webHook, $request));
-                //array_push($results, $this->sendEmail($webHook, $request, 'welkom'));
+                array_push($results, $this->processRequest($webHook, $request));
                 break;
             case 'cancelled':
-                //array_push($results, $this->sendEmail($webHook, $request, 'annulering'));
+                array_push($results, $this->sendEmail($webHook, $request, 'annulering'));
                 break;
         }
         $webHook->setResult($results);
@@ -41,18 +40,21 @@ class RequestService
         return $webHook;
     }
 
-    public function sendEmail($webHook, $request, $data,  $emailType)
+    public function sendEmail($webHook, $request, $data, $emailType)
     {
         $content = [];
         switch ($emailType) {
             case 'welkom':
-                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'templates', 'id'=>"2ca5b662-e941-46c9-ae87-ae0c68d0aa5d"]);
+                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'templates', 'id'=>'2ca5b662-e941-46c9-ae87-ae0c68d0aa5d']);
                 break;
             case 'password':
-                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'templates', 'id'=>"07075add-89c7-4911-b255-9392bae724b3"]);
+                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'templates', 'id'=>'07075add-89c7-4911-b255-9392bae724b3']);
                 break;
             case 'annulering':
-                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'templates', 'id'=>"4016c529-cf9e-415e-abb1-2aba8bfa539e"]);
+                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'templates', 'id'=>'4016c529-cf9e-415e-abb1-2aba8bfa539e']);
+                break;
+            case 'usernameExists':
+                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'templates', 'id'=>'6f4dbb62-5101-4863-9802-d08e0f0096d2']);
                 break;
         }
 
@@ -79,18 +81,18 @@ class RequestService
         return $this->commonGroundService->createResource($message, ['component'=>'bs', 'type'=>'messages'])['@id'];
     }
 
-    public function proccesRequest($webHook, $request)
+    public function processRequest($webHook, $request)
     {
+        $results = [];
         // Get contact person and email for the username
         // Create an Organization in WRC, a Place in LC and a Node in CHIN
         // Create a user and send username & password emails
         if (key_exists('organization', $request['properties'])) {
             if ($organizationContact = $this->commonGroundService->isResource($request['properties']['organization'])) {
-
                 $request['status'] = 'inProgress';
-                $request =  $this->commonGroundService->saveResource($request, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
+                $request = $this->commonGroundService->saveResource($request, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
 
-                $acountData= [];
+                $acountData = [];
                 $organization = [];
 
                 // Get contact for the new user
@@ -109,7 +111,16 @@ class RequestService
                     return 'organization and the contact person do not not have an email';
                 }
 
-                //Create an Organization
+                // Check if username already exists
+                $user = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=>$username])['hydra:member'];
+                if (count($user) > 0) {
+                    array_push($results, 'username already exists');
+                    array_push($results, $this->sendEmail($webHook, $request, $user, 'usernameExists'));
+
+                    return $results;
+                }
+
+                // Create an Organization
                 $organization['name'] = $organizationContact['name'];
                 $organization['description'] = $organizationContact['description'];
                 if (key_exists('kvk', $organizationContact) and (!empty($organizationContact['kvk']))) {
@@ -191,7 +202,7 @@ class RequestService
 
                 //Send username & password emails
                 $request['status'] = 'processed';
-                $request =  $this->commonGroundService->saveResource($request, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
+                $request = $this->commonGroundService->saveResource($request, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
 
                 array_push($results, $this->sendEmail($webHook, $request, $acountData, 'welkom'));
                 array_push($results, $this->sendEmail($webHook, $request, $userData, 'password'));
@@ -202,10 +213,8 @@ class RequestService
             return 'organization does not exist in this request';
         }
 
-//        return $results;
+        return $results;
     }
-
-
 
     public function createMessage(array $data, array $request, $content, $receiver, $attachments = null)
     {
@@ -235,7 +244,6 @@ class RequestService
         if (!key_exists('sender', $message)) {
             $message['sender'] = $receiver;
         }
-
 
         $message['data'] = ['resource'=>$request, 'sender'=>$organization, 'receiver'=>$this->commonGroundService->getResource($message['reciever'])];
         $message['data'] = array_merge($message['data'], $data);  // lets accept contextual data from de bl
