@@ -39,7 +39,7 @@ class CheckinService
         $content = [];
         switch ($emailType) {
             case 'welkom':
-                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-welkom"])['@id'];
+                $content = $this->commonGroundService->cleanUrl(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-welkom"])['@id'];
                 break;
         }
         if ($organization = $this->commonGroundService->isResource($checkin['node']['organization'])) {
@@ -71,6 +71,8 @@ class CheckinService
                 $results['numberOfCheckins'] = $numberOfCheckins;
                 $results['maximumAttendeeCapacity'] = $maximumAttendeeCapacity;
                 $results['percentage'] = $percentage;
+
+                //array_push($results, $this->sendEmail($webHook, $checkin, $accommodation, ''))
             } else {
                 return 'De accommodation van de node heeft geen maximumAttendeeCapacity';
             }
