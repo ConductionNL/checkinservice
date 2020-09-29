@@ -59,7 +59,7 @@ class WebHookSubscriber implements EventSubscriberInterface
 
         if ($resource instanceof WebHook) {
             $resource->getRequest();
-            $request = $this->commonGroundService->getResource($resource->getRequest(), [], false ); // don't cashe here
+            $request = $this->commonGroundService->getResource($resource->getRequest(), [], false); // don't cashe here
 
             if ($request['@type'] == 'Request' && strpos($request['requestType'], 'c328e6b4-77f6-4c58-8544-4128452acc80') && $request['status'] == 'submitted') {
                 $resource = $this->requestService->handle($resource);
