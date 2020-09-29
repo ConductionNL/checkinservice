@@ -74,7 +74,7 @@ class RequestService
         }
 
         // Loading the message
-        $message = $this->createMessage($data, $request, $content, $receiver);
+        $message = $this->createMessage($data, $request, $content['content'], $receiver);
 
         return $this->commonGroundService->createResource($message, ['component'=>'bs', 'type'=>'messages'])['@id'];
     }
@@ -88,7 +88,7 @@ class RequestService
             if ($organizationContact = $this->commonGroundService->isResource($request['properties']['organization'])) {
 
                 $request['status'] = 'inProgress';
-                //$request =  $this->commonGroundService->saveResource($request, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
+                $request =  $this->commonGroundService->saveResource($request, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
 
                 $acountData= [];
                 $organization = [];
@@ -190,7 +190,7 @@ class RequestService
 
                 //Send username & password emails
                 $request['status'] = 'processed';
-                //$request =  $this->commonGroundService->saveResource($request, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
+                $request =  $this->commonGroundService->saveResource($request, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
 
                 array_push($results, $this->sendEmail($webHook, $request, $acountData, 'welkom'));
                 array_push($results, $this->sendEmail($webHook, $request, $user, 'password'));
