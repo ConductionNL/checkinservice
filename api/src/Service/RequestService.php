@@ -46,18 +46,16 @@ class RequestService
         $content = [];
         switch ($emailType) {
             case 'welkom':
-                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-welkom"])['@id'];
-                break;
-            case 'inlognaam':
-                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-inlognaam"])['@id'];
+                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'templates', 'id'=>"2ca5b662-e941-46c9-ae87-ae0c68d0aa5d"]);
                 break;
             case 'wachtwoord':
-                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-wachtwoord"])['@id'];
+                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'templates', 'id'=>"07075add-89c7-4911-b255-9392bae724b3"]);
                 break;
             case 'annulering':
-                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}/e-mail-annulering"])['@id'];
+                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'templates', 'id'=>"4016c529-cf9e-415e-abb1-2aba8bfa539e"]);
                 break;
         }
+        /* waarom deze error catch
         if (key_exists('organization', $request['properties'])) {
             if ($organizationContact = $this->commonGroundService->isResource($request['properties']['organization'])) {
                 if (key_exists('emails', $organizationContact) and (count($organizationContact['emails']) > 0)) {
@@ -73,6 +71,7 @@ class RequestService
         } else {
             return 'No email receiver found [organization does not exist]';
         }
+        */
         $message = $this->createMessage($request, $content, $receiver);
 
         return $this->commonGroundService->createResource($message, ['component'=>'bs', 'type'=>'messages'])['@id'];
