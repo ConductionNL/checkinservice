@@ -66,7 +66,7 @@ class CheckinService
                 $numberOfCheckins = count($this->commonGroundService->getResourceList(['component'=>'chin', 'type'=>'checkins'], ['node.accommodation'=>$node['accommodation']])['hydra:member']);
                 $maximumAttendeeCapacity = $accommodation['maximumAttendeeCapacity'];
 
-                $percentage = round($numberOfCheckins / $maximumAttendeeCapacity * 100,1,PHP_ROUND_HALF_UP);
+                $percentage = round($numberOfCheckins / $maximumAttendeeCapacity * 100, 1, PHP_ROUND_HALF_UP);
 
                 $results['numberOfCheckins'] = $numberOfCheckins;
                 $results['maximumAttendeeCapacity'] = $maximumAttendeeCapacity;
