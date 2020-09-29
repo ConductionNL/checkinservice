@@ -34,7 +34,7 @@ class CheckinService
         return $webHook;
     }
 
-    public function sendEmail($webHook, $checkin, $emailType)
+    public function sendEmail($webHook, $checkin, $data, $emailType)
     {
         $content = [];
         switch ($emailType) {
@@ -51,7 +51,7 @@ class CheckinService
         } else {
             return 'Geen ontvanger gevonden [organization van de node is geen resource]';
         }
-        $message = $this->createMessage($checkin, $content, $receiver);
+        $message = $this->createMessage($data, $checkin, $content, $receiver);
 
         return $this->commonGroundService->createResource($message, ['component'=>'bs', 'type'=>'messages'])['@id'];
     }
@@ -81,7 +81,7 @@ class CheckinService
         return $results;
     }
 
-    public function createMessage(array $checkin, $content, $receiver, $attachments = null)
+    public function createMessage(array $data, array $checkin, $content, $receiver, $attachments = null)
     {
         $application = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>"{$this->params->get('app_id')}"]);
         if (key_exists('@id', $application['organization'])) {
@@ -91,19 +91,27 @@ class CheckinService
         }
 
         $message = [];
-        $message['service'] = $this->commonGroundService->getResourceList(['component'=>'bs', 'type'=>'services'], "type=mailer&organization=$serviceOrganization")['hydra:member'][0]['@id'];
-        $message['status'] = 'queued';
-        $organization = $this->commonGroundService->getResource($checkin['organization']);
 
+        // Tijdelijke oplossing voor juiste $message['service'] meegeven, was eerst dit hier onder, waar in de query op de organization check het mis gaat:
+        //$message['service'] = $this->commonGroundService->getResourceList(['component'=>'bs', 'type'=>'services'], "type=mailer&organization=$serviceOrganization")['hydra:member'][0]['@id'];
+
+        $message['service'] = '/services/1541d15b-7de3-4a1a-a437-80079e4a14e0';
+        $message['status'] = 'queued';
+
+        $organization = $this->commonGroundService->getResource($checkin['organization']);
+        // lets use the organization as sender
         if ($organization['contact']) {
             $message['sender'] = $organization['contact'];
         }
+
+        // if we don't have that we are going to self send te message
         $message['reciever'] = $receiver;
         if (!key_exists('sender', $message)) {
             $message['sender'] = $receiver;
         }
 
         $message['data'] = ['resource'=>$checkin, 'sender'=>$organization, 'receiver'=>$this->commonGroundService->getResource($message['reciever'])];
+        $message['data'] = array_merge($message['data'], $data); // lets accept contextual data from de bl
         $message['content'] = $content;
         if ($attachments) {
             $message['attachments'] = $attachments;

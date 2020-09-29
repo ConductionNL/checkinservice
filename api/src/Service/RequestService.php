@@ -28,10 +28,9 @@ class RequestService
         switch ($request['status']) {
             case 'submitted':
                 array_push($results, $this->processRequest($webHook, $request));
-                //array_push($results, $this->sendEmail($webHook, $request, 'welkom'));
                 break;
             case 'cancelled':
-                //array_push($results, $this->sendEmail($webHook, $request, 'annulering'));
+                array_push($results, $this->sendEmail($webHook, $request, 'annulering'));
                 break;
         }
         $webHook->setResult($results);
@@ -53,6 +52,9 @@ class RequestService
                 break;
             case 'annulering':
                 $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'templates', 'id'=>"4016c529-cf9e-415e-abb1-2aba8bfa539e"]);
+                break;
+            case 'usernameExists':
+                $content = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'templates', 'id'=>"6f4dbb62-5101-4863-9802-d08e0f0096d2"]);
                 break;
         }
 
@@ -110,7 +112,15 @@ class RequestService
                     return 'organization and the contact person do not not have an email';
                 }
 
-                //Create an Organization
+                // Check if username already exists
+                $user = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=>$username])['hydra:member'];
+                if( count($user) > 0 ) {
+                    array_push($results, 'username already exists');
+                    array_push($results, $this->sendEmail($webHook, $request, $user, 'usernameExists'));
+                    return $results;
+                }
+
+                // Create an Organization
                 $organization['name'] = $organizationContact['name'];
                 $organization['description'] = $organizationContact['description'];
                 if (key_exists('kvk', $organizationContact) and (!empty($organizationContact['kvk']))) {
