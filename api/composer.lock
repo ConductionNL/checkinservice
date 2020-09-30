@@ -539,12 +539,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ConductionNL/CommonGroundBundle.git",
-                "reference": "5d0e3a55496cc87494908ce8c25040c4b58b648e"
+                "reference": "0f4373bda746f9bc29e1899e7b81dad62be9df41"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ConductionNL/CommonGroundBundle/zipball/5d0e3a55496cc87494908ce8c25040c4b58b648e",
-                "reference": "5d0e3a55496cc87494908ce8c25040c4b58b648e",
+                "url": "https://api.github.com/repos/ConductionNL/CommonGroundBundle/zipball/0f4373bda746f9bc29e1899e7b81dad62be9df41",
+                "reference": "0f4373bda746f9bc29e1899e7b81dad62be9df41",
                 "shasum": ""
             },
             "require": {
@@ -622,7 +622,7 @@
                 "postcode",
                 "rsin"
             ],
-            "time": "2020-09-29T09:04:11+00:00"
+            "time": "2020-09-30T12:19:49+00:00"
         },
         {
             "name": "doctrine/annotations",
