@@ -85,7 +85,6 @@ class RequestService
         // Loading the message
         $message = $this->createMessage($data, $request, $content, $receiver);
 
-
         return $this->commonGroundService->createResource($message, ['component'=>'bs', 'type'=>'messages'])['@id'];
     }
 
