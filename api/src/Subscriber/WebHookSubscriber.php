@@ -61,7 +61,7 @@ class WebHookSubscriber implements EventSubscriberInterface
             $resource->getRequest();
             $request = $this->commonGroundService->getResource($resource->getRequest(), [], false); // don't cashe here
 
-            if ($request['@type'] == 'Request' && strpos($request['requestType'], 'c328e6b4-77f6-4c58-8544-4128452acc80') && $request['status'] == 'submitted') {
+            if ($request['@type'] == 'Request' && strpos($request['requestType'], 'c328e6b4-77f6-4c58-8544-4128452acc80') && ($request['status'] == 'submitted' || $request['status'] == 'cancelled')) {
                 $resource = $this->requestService->handle($resource);
             } elseif ($request['@type'] == 'Checkin') {
                 $resource = $this->checkinService->handle($resource);
