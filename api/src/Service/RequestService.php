@@ -64,9 +64,15 @@ class RequestService
                 if (key_exists('emails', $organizationContact) and (count($organizationContact['emails']) > 0)) {
                     $receiver = $organizationContact['@id'];
                 } elseif (key_exists('persons', $organizationContact) and (count($organizationContact['persons']) > 0)) {
-                    $receiver = $organizationContact['persons'][0]['@id'];
+                    // Could be a for loop to check if any contact person has an email:
+                    $organizationContactPerson = $this->commonGroundService->getResource($organizationContact['persons'][0]['@id']);
+                    if (key_exists('emails', $organizationContactPerson) and (count($organizationContactPerson['emails']) > 0)) {
+                        $receiver = $organizationContactPerson['@id'];
+                    } else {
+                        return 'No email receiver found [organization and the contact person do not have an email]';
+                    }
                 } else {
-                    return 'No email receiver found [organization does not have a email or contact person]';
+                    return 'No email receiver found [organization does not have an email or contact person]';
                 }
             } else {
                 return 'No email receiver found [organization is not a resource]';
