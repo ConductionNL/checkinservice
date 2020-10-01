@@ -97,7 +97,9 @@ class RequestService
         if (key_exists('organization', $request['properties'])) {
             if ($organizationContact = $this->commonGroundService->isResource($request['properties']['organization'])) {
                 $request['status'] = 'inProgress';
-                $request = $this->commonGroundService->saveResource($request, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
+
+                $requestStatus = ['status'=> 'inProgress'];
+                //$request = $this->commonGroundService->updateResource($requestStatus, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
 
                 $acountData = [];
                 $organization = [];
@@ -123,6 +125,9 @@ class RequestService
                 if (count($users) > 0) {
                     array_push($results, 'username already exists');
                     array_push($results, $this->sendEmail($webHook, $request, $users[0], 'usernameExists'));
+
+                    $requestStatus = ['status'=> 'processed'];
+                   // $request = $this->commonGroundService->updateResource($requestStatus, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
 
                     return $results;
                 }
@@ -207,12 +212,14 @@ class RequestService
                 $user['password'] = $password;
                 $userData = ['user'=>$user];
 
-                //Send username & password emails
-                $request['status'] = 'processed';
-                $request = $this->commonGroundService->saveResource($request, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
-
                 array_push($results, $this->sendEmail($webHook, $request, $acountData, 'welkom'));
                 array_push($results, $this->sendEmail($webHook, $request, $userData, 'password'));
+
+                //Send username & password emails
+                $request['status'] = 'processed';
+                $requestStatus = ['status'=> 'processed'];
+                //$request = $this->commonGroundService->updateResource($requestStatus, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
+
             } else {
                 return 'organization is not a resource';
             }
