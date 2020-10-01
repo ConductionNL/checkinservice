@@ -30,7 +30,8 @@ class RequestService
                 array_push($results, $this->processRequest($webHook, $request));
                 break;
             case 'cancelled':
-                array_push($results, $this->sendEmail($webHook, $request, 'annulering'));
+                $data = [];
+                array_push($results, $this->sendEmail($webHook, $request, $data, 'annulering'));
                 break;
         }
         $webHook->setResult($results);
