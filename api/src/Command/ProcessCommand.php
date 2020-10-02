@@ -60,14 +60,13 @@ class ProcessCommand extends Command
         //$io->section('Removing old health checks');
         //$this->em->getRepository('App\Entity\HealthLog')->removeOld();
 
-
         /** @var string $version */
         $request = $input->getOption('request');
 
         if ($request) {
-            $requests = $this->commonGroundService->getResourceList(['component'=>'vrc','type'=>'requests'],['status'=>'submitted','request_type'=>'c328e6b4-77f6-4c58-8544-4128452acc80','id'=>$request])["hydra:member"];
+            $requests = $this->commonGroundService->getResourceList(['component'=>'vrc', 'type'=>'requests'], ['status'=>'submitted', 'request_type'=>'c328e6b4-77f6-4c58-8544-4128452acc80', 'id'=>$request])['hydra:member'];
         } else {
-            $requests = $this->commonGroundService->getResourceList(['component'=>'vrc','type'=>'requests'],['status'=>'submitted','request_type'=>'c328e6b4-77f6-4c58-8544-4128452acc80'])["hydra:member"];
+            $requests = $this->commonGroundService->getResourceList(['component'=>'vrc', 'type'=>'requests'], ['status'=>'submitted', 'request_type'=>'c328e6b4-77f6-4c58-8544-4128452acc80'])['hydra:member'];
         }
 
         if (!$requests || count($requests) < 1) {
