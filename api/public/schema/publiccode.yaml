@@ -6,7 +6,7 @@ url: "https://github.com/ConductionNL/checkinservice"
 landingURL: "chis.zuid-drecht.nl" 
 isBasedOn: "https://github.com/ConductionNL/Proto-component-commonground.git" 
 softwareVersion: "V1.0"
-releaseDate: "2020-25-09"
+releaseDate: "2020-01-10"
 logo: chis.zaakonline.nl 
 monochromeLogo: img/logo-mono.svg
 
