@@ -30,7 +30,8 @@ class RequestService
                 array_push($results, $this->processRequest($webHook, $request));
                 break;
             case 'cancelled':
-                array_push($results, $this->sendEmail($webHook, $request, 'annulering'));
+                $data = [];
+                array_push($results, $this->sendEmail($webHook, $request, $data, 'annulering'));
                 break;
         }
         $webHook->setResult($results);
@@ -64,9 +65,15 @@ class RequestService
                 if (key_exists('emails', $organizationContact) and (count($organizationContact['emails']) > 0)) {
                     $receiver = $organizationContact['@id'];
                 } elseif (key_exists('persons', $organizationContact) and (count($organizationContact['persons']) > 0)) {
-                    $receiver = $organizationContact['persons'][0]['@id'];
+                    // Could be a for loop to check if any contact person has an email:
+                    $organizationContactPerson = $this->commonGroundService->getResource($organizationContact['persons'][0]['@id']);
+                    if (key_exists('emails', $organizationContactPerson) and (count($organizationContactPerson['emails']) > 0)) {
+                        $receiver = $organizationContactPerson['@id'];
+                    } else {
+                        return 'No email receiver found [organization and the contact person do not have an email]';
+                    }
                 } else {
-                    return 'No email receiver found [organization does not have a email or contact person]';
+                    return 'No email receiver found [organization does not have an email or contact person]';
                 }
             } else {
                 return 'No email receiver found [organization is not a resource]';
@@ -77,7 +84,6 @@ class RequestService
 
         // Loading the message
         $message = $this->createMessage($data, $request, $content, $receiver);
-
 
         return $this->commonGroundService->createResource($message, ['component'=>'bs', 'type'=>'messages'])['@id'];
     }
@@ -91,7 +97,9 @@ class RequestService
         if (key_exists('organization', $request['properties'])) {
             if ($organizationContact = $this->commonGroundService->isResource($request['properties']['organization'])) {
                 $request['status'] = 'inProgress';
-                $request = $this->commonGroundService->saveResource($request, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
+
+                $requestStatus = ['status'=> 'inProgress'];
+                //$request = $this->commonGroundService->updateResource($requestStatus, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
 
                 $acountData = [];
                 $organization = [];
@@ -113,24 +121,13 @@ class RequestService
                 }
 
                 // Check if username already exists
-                $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'],['username'=>$username])['hydra:member'];
-
+                $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=>$username])['hydra:member'];
                 if (count($users) > 0) {
-
-                    $message = [];
-
-                    // Tijdelijke oplossing voor juiste $message['service'] meegeven, was eerst dit hier onder, waar in de query op de organization check het mis gaat:
-                    //$message['service'] = $this->commonGroundService->getResourceList(['component'=>'bs', 'type'=>'services'], "type=mailer&organization=$serviceOrganization")['hydra:member'][0]['@id'];
-
-                    $message['service'] = '/services/1541d15b-7de3-4a1a-a437-80079e4a14e0';
-                    $message['status'] = 'queued';
-                    $message['reciever'] = $username;
-                    $message['sender'] = 'no-reply@conduction.nl';
-                    $message['data'] =   [];
-                    $message['content'] =  $this->commonGroundService->cleanUrl(['component'=>'wrc', 'type'=>'templates', 'id'=>'6f4dbb62-5101-4863-9802-d08e0f0096d2']);
-
                     array_push($results, 'username already exists');
-                    array_push($results, $this->commonGroundService->createResource($message, ['component'=>'bs', 'type'=>'messages'])['@id']);
+                    array_push($results, $this->sendEmail($webHook, $request, $users[0], 'usernameExists'));
+
+                    $requestStatus = ['status'=> 'processed'];
+                    // $request = $this->commonGroundService->updateResource($requestStatus, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
 
                     return $results;
                 }
@@ -215,12 +212,13 @@ class RequestService
                 $user['password'] = $password;
                 $userData = ['user'=>$user];
 
-                //Send username & password emails
-                $request['status'] = 'processed';
-                $request = $this->commonGroundService->saveResource($request, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
-
                 array_push($results, $this->sendEmail($webHook, $request, $acountData, 'welkom'));
                 array_push($results, $this->sendEmail($webHook, $request, $userData, 'password'));
+
+                //Send username & password emails
+                $request['status'] = 'processed';
+                $requestStatus = ['status'=> 'processed'];
+            //$request = $this->commonGroundService->updateResource($requestStatus, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
             } else {
                 return 'organization is not a resource';
             }
