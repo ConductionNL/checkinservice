@@ -243,7 +243,7 @@ class RequestService
         // Tijdelijke oplossing voor juiste $message['service'] meegeven, was eerst dit hier onder, waar in de query op de organization check het mis gaat:
         //$message['service'] = $this->commonGroundService->getResourceList(['component'=>'bs', 'type'=>'services'], "type=mailer&organization=$serviceOrganization")['hydra:member'][0]['@id'];
 
-        $message['service'] = '/services/1541d15b-7de3-4a1a-a437-80079e4a14e0';
+        $message['service'] = '/services/eb7ffa01-4803-44ce-91dc-d4e3da7917da';
         $message['status'] = 'queued';
 
         $organization = $this->commonGroundService->getResource($request['organization']);
