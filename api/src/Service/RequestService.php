@@ -127,7 +127,7 @@ class RequestService
                     array_push($results, $this->sendEmail($webHook, $request, $users[0], 'usernameExists'));
 
                     $requestStatus = ['status'=> 'processed'];
-                   // $request = $this->commonGroundService->updateResource($requestStatus, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
+                    // $request = $this->commonGroundService->updateResource($requestStatus, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
 
                     return $results;
                 }
@@ -218,8 +218,7 @@ class RequestService
                 //Send username & password emails
                 $request['status'] = 'processed';
                 $requestStatus = ['status'=> 'processed'];
-                //$request = $this->commonGroundService->updateResource($requestStatus, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
-
+            //$request = $this->commonGroundService->updateResource($requestStatus, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
             } else {
                 return 'organization is not a resource';
             }
