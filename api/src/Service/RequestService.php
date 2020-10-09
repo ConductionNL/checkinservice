@@ -181,16 +181,15 @@ class RequestService
                 $acountData['place'] = $place;
 
                 // Create a (example) Place Accommodation
-                $accommodation['name'] = 'Tafel 1';
-                $accommodation['description'] = $organizationContact['name'].' Tafel 1';
+                $accommodation['name'] = $organizationContact['name'];
+                $accommodation['description'] = $organizationContact['description'];
                 $accommodation['place'] = '/places/'.$place['id'];
                 $accommodation = $this->commonGroundService->saveResource($accommodation, ['component' => 'lc', 'type' => 'accommodations']);
                 $acountData['accommodation'] = $accommodation;
 
                 // Create a Node
-                $node['name'] = 'Tafel 1';
-                $node['description'] = $organizationContact['name'].' Tafel 1';
-                $node['passthroughUrl'] = 'https://zuid-drecht.nl';
+                $node['name'] = $organizationContact['name'];
+                $node['description'] = $organizationContact['description'];
                 $node['accommodation'] = $this->commonGroundService->cleanUrl(['component' => 'lc', 'type' => 'accommodations', 'id' => $accommodation['id']]);
                 $node['organization'] = $this->commonGroundService->cleanUrl(['component' => 'wrc', 'type' => 'organizations', 'id' => $organization['id']]);
                 $node = $this->commonGroundService->saveResource($node, ['component' => 'chin', 'type' => 'nodes']);
