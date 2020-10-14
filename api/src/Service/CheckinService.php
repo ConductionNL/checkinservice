@@ -109,7 +109,7 @@ class CheckinService
                 } elseif ($percentage >= 80) {
                     array_push($results, '80% or more');
                     $messages = $this->commonGroundService->getResourceList(['component'=>'bs', 'type'=>'messages'], ['resource'=>$nodeUrl, 'type'=>'highCheckinCount'])['hydra:member'];
-                    if (count($messages) < 10) {
+                    if (count($messages) < 1) {
                         array_push($results, $this->sendEmail($webHook, $checkin, $accommodationData, 'highCheckinCount'));
                     } else {
                         array_push($results, 'Email has already been sent');

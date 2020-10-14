@@ -127,7 +127,7 @@ class RequestService
                     array_push($results, $this->sendEmail($webHook, $request, $users[0], 'usernameExists'));
 
                     $requestStatus = ['status'=> 'processed'];
-                   // $request = $this->commonGroundService->updateResource($requestStatus, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
+                    // $request = $this->commonGroundService->updateResource($requestStatus, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
 
                     return $results;
                 }
@@ -181,16 +181,15 @@ class RequestService
                 $acountData['place'] = $place;
 
                 // Create a (example) Place Accommodation
-                $accommodation['name'] = 'Tafel 1';
-                $accommodation['description'] = $organizationContact['name'].' Tafel 1';
+                $accommodation['name'] = $organizationContact['name'];
+                $accommodation['description'] = $organizationContact['description'];
                 $accommodation['place'] = '/places/'.$place['id'];
                 $accommodation = $this->commonGroundService->saveResource($accommodation, ['component' => 'lc', 'type' => 'accommodations']);
                 $acountData['accommodation'] = $accommodation;
 
                 // Create a Node
-                $node['name'] = 'Tafel 1';
-                $node['description'] = $organizationContact['name'].' Tafel 1';
-                $node['passthroughUrl'] = 'https://zuid-drecht.nl';
+                $node['name'] = $organizationContact['name'];
+                $node['description'] = $organizationContact['description'];
                 $node['accommodation'] = $this->commonGroundService->cleanUrl(['component' => 'lc', 'type' => 'accommodations', 'id' => $accommodation['id']]);
                 $node['organization'] = $this->commonGroundService->cleanUrl(['component' => 'wrc', 'type' => 'organizations', 'id' => $organization['id']]);
                 $node = $this->commonGroundService->saveResource($node, ['component' => 'chin', 'type' => 'nodes']);
@@ -218,8 +217,7 @@ class RequestService
                 //Send username & password emails
                 $request['status'] = 'processed';
                 $requestStatus = ['status'=> 'processed'];
-                //$request = $this->commonGroundService->updateResource($requestStatus, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
-
+            //$request = $this->commonGroundService->updateResource($requestStatus, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
             } else {
                 return 'organization is not a resource';
             }
