@@ -41,7 +41,7 @@ class RequestService
         return $webHook;
     }
 
-    public function sendEmail($webHook, $request, $data, $emailType)
+    public function sendEmail($webHook, $request, $data, $emailType, $receiver)
     {
         $content = [];
         switch ($emailType) {
@@ -59,28 +59,6 @@ class RequestService
                 break;
         }
 
-        // determining the reciever
-        if (key_exists('organization', $request['properties'])) {
-            if ($organizationContact = $this->commonGroundService->isResource($request['properties']['organization'])) {
-                if (key_exists('emails', $organizationContact) and (count($organizationContact['emails']) > 0)) {
-                    $receiver = $organizationContact['@id'];
-                } elseif (key_exists('persons', $organizationContact) and (count($organizationContact['persons']) > 0)) {
-                    // Could be a for loop to check if any contact person has an email:
-                    $organizationContactPerson = $this->commonGroundService->getResource($organizationContact['persons'][0]['@id']);
-                    if (key_exists('emails', $organizationContactPerson) and (count($organizationContactPerson['emails']) > 0)) {
-                        $receiver = $organizationContactPerson['@id'];
-                    } else {
-                        return 'No email receiver found [organization and the contact person do not have an email]';
-                    }
-                } else {
-                    return 'No email receiver found [organization does not have an email or contact person]';
-                }
-            } else {
-                return 'No email receiver found [organization is not a resource]';
-            }
-        } else {
-            return 'No email receiver found [organization does not exist]';
-        }
 
         // Loading the message
         $message = $this->createMessage($data, $request, $content, $receiver);
@@ -104,27 +82,34 @@ class RequestService
                 $acountData = [];
                 $organization = [];
 
-                // Get contact for the new user
-                if (key_exists('persons', $organizationContact) and (count($organizationContact['persons']) > 0)) {
-                    $person = $this->commonGroundService->getResource($this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $organizationContact['persons'][0]['id']]));
-                } else {
-                    return 'organization does not have a contact person';
-                }
+                if (!isset($request['submitters'][0])) {
+                    // Get contact for the new user
+                    if (key_exists('persons', $organizationContact) and (count($organizationContact['persons']) > 0)) {
+                        $person = $this->commonGroundService->getResource($this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $organizationContact['persons'][0]['id']]));
+                    } else {
+                        return 'organization does not have a contact person';
+                    }
 
-                // Get the email for this users username
-                if (key_exists('emails', $organizationContact) and (count($organizationContact['emails']) > 0)) {
-                    $username = $organizationContact['emails'][0]['email'];
-                } elseif (key_exists('emails', $person) and (count($person['emails']) > 0)) {
-                    $username = $person['emails'][0]['email'];
+                    // Get the email for this users username
+                    if (key_exists('emails', $organizationContact) and (count($organizationContact['emails']) > 0)) {
+                        $username = $organizationContact['emails'][0]['email'];
+                    } elseif (key_exists('emails', $person) and (count($person['emails']) > 0)) {
+                        $username = $person['emails'][0]['email'];
+                    } else {
+                        return 'organization and the contact person do not not have an email';
+                    }
                 } else {
-                    return 'organization and the contact person do not not have an email';
+                    $person = $this->commonGroundService->cleanUrl($request['submitters'][0]['brp']);
+                    $users = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'users'],['person' => $person])['hydra:member'];
+                    $username = $users[0]['username'];
                 }
 
                 // Check if username already exists
                 $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=>$username])['hydra:member'];
-                if (count($users) > 0) {
+                if (count($users) > 0 && in_array('group.admin', $users[0]['roles'])) {
+                    $person = $this->commonGroundService->cleanUrl($users[0]['person']);
                     array_push($results, 'username already exists');
-                    array_push($results, $this->sendEmail($webHook, $request, $users[0], 'usernameExists'));
+                    array_push($results, $this->sendEmail($webHook, $request, $users[0], 'usernameExists', $person));
 
                     $requestStatus = ['status'=> 'processed'];
                     // $request = $this->commonGroundService->updateResource($requestStatus, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
@@ -195,26 +180,49 @@ class RequestService
                 $node = $this->commonGroundService->saveResource($node, ['component' => 'chin', 'type' => 'nodes']);
                 $acountData['node'] = $node;
 
-                // Lets create a password
-                $password = bin2hex(openssl_random_pseudo_bytes(4));
 
-                // Create an user in UC
-                $user['organization'] = $this->commonGroundService->cleanUrl(['component' => 'wrc', 'type' => 'organizations', 'id' => $organization['id']]);
-                $user['username'] = $username;
-                $user['password'] = $password;
-                $user['person'] = $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']]);
-                $user['userGroups'] = [
-                    '/groups/4085d475-063b-47ed-98eb-0a7d8b01f3b7',
-                ];
-                $user = $this->commonGroundService->saveResource($user, ['component' => 'uc', 'type' => 'users']);
-                $acountData['user'] = $user;
-                $user['password'] = $password;
-                $userData = ['user'=>$user];
+                //what if the user already has an account
+                if (isset($request['submitters'][0])) {
+                    $person = $this->commonGroundService->cleanUrl($request['submitters'][0]['brp']);
+                    $users = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'users'],['person' => $person])['hydra:member'];
+                    $person = $this->commonGroundService->getResource($request['submitters'][0]['brp']);
+                    if (count($users) > 0){
+                        $user = $users[0];
+                        $user['person'] = $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']]);
+                        $user['organization'] = $this->commonGroundService->cleanUrl(['component' => 'wrc', 'type' => 'organizations', 'id' => $organization['id']]);
+                        $user['userGroups'] = [
+                            '/groups/4085d475-063b-47ed-98eb-0a7d8b01f3b7',
+                        ];
 
-                array_push($results, $this->sendEmail($webHook, $request, $acountData, 'welkom'));
-                array_push($results, $this->sendEmail($webHook, $request, $userData, 'password'));
+                        $user = $this->commonGroundService->updateResource($user);
+                        $acountData['user'] = $user;
 
-                //Send username & password emails
+                        //Send welcome mail
+                        array_push($results, $this->sendEmail($webHook, $request, $acountData, 'welkom', $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']]) ));
+                    }
+                } else {
+                    // Lets create a password
+                    $password = bin2hex(openssl_random_pseudo_bytes(4));
+
+                    // Create an user in UC
+                    $user['organization'] = $this->commonGroundService->cleanUrl(['component' => 'wrc', 'type' => 'organizations', 'id' => $organization['id']]);
+                    $user['username'] = $username;
+                    $user['password'] = $password;
+                    $user['person'] = $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']]);
+                    $user['userGroups'] = [
+                        '/groups/4085d475-063b-47ed-98eb-0a7d8b01f3b7',
+                    ];
+                    $user = $this->commonGroundService->saveResource($user, ['component' => 'uc', 'type' => 'users']);
+                    $acountData['user'] = $user;
+                    $user['password'] = $password;
+                    $userData = ['user'=>$user];
+
+                    //Send username & password emails
+                    array_push($results, $this->sendEmail($webHook, $request, $acountData, 'welkom', $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']])));
+                    array_push($results, $this->sendEmail($webHook, $request, $userData, 'password', $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']])));
+                }
+
+
                 $request['status'] = 'processed';
                 $requestStatus = ['status'=> 'processed'];
             //$request = $this->commonGroundService->updateResource($requestStatus, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
