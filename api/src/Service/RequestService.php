@@ -59,7 +59,6 @@ class RequestService
                 break;
         }
 
-
         // Loading the message
         $message = $this->createMessage($data, $request, $content, $receiver);
 
@@ -100,7 +99,7 @@ class RequestService
                     }
                 } else {
                     $person = $this->commonGroundService->cleanUrl($request['submitters'][0]['brp']);
-                    $users = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'users'],['person' => $person])['hydra:member'];
+                    $users = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'users'], ['person' => $person])['hydra:member'];
                     $username = $users[0]['username'];
                 }
 
@@ -180,13 +179,12 @@ class RequestService
                 $node = $this->commonGroundService->saveResource($node, ['component' => 'chin', 'type' => 'nodes']);
                 $acountData['node'] = $node;
 
-
                 //what if the user already has an account
                 if (isset($request['submitters'][0])) {
                     $person = $this->commonGroundService->cleanUrl($request['submitters'][0]['brp']);
-                    $users = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'users'],['person' => $person])['hydra:member'];
+                    $users = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'users'], ['person' => $person])['hydra:member'];
                     $person = $this->commonGroundService->getResource($request['submitters'][0]['brp']);
-                    if (count($users) > 0){
+                    if (count($users) > 0) {
                         $user = $users[0];
                         $user['person'] = $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']]);
                         $user['organization'] = $this->commonGroundService->cleanUrl(['component' => 'wrc', 'type' => 'organizations', 'id' => $organization['id']]);
@@ -198,7 +196,7 @@ class RequestService
                         $acountData['user'] = $user;
 
                         //Send welcome mail
-                        array_push($results, $this->sendEmail($webHook, $request, $acountData, 'welkom', $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']]) ));
+                        array_push($results, $this->sendEmail($webHook, $request, $acountData, 'welkom', $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']])));
                     }
                 } else {
                     // Lets create a password
@@ -221,7 +219,6 @@ class RequestService
                     array_push($results, $this->sendEmail($webHook, $request, $acountData, 'welkom', $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']])));
                     array_push($results, $this->sendEmail($webHook, $request, $userData, 'password', $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']])));
                 }
-
 
                 $request['status'] = 'processed';
                 $requestStatus = ['status'=> 'processed'];
