@@ -216,8 +216,8 @@ class RequestService
                     $userData = ['user' => $user];
 
                     //Send username & password emails
-                    array_push($results, $this->sendEmail($webHook, $request, $acountData, 'welkom', $organizationContact['emails'][0]['email']));
-                    array_push($results, $this->sendEmail($webHook, $request, $userData, 'password', $organizationContact['emails'][0]['email']));
+                    array_push($results, $this->sendEmail($webHook, $request, $acountData, 'welkom', $username));
+                    array_push($results, $this->sendEmail($webHook, $request, $userData, 'password', $username));
                 }
 
                 $request['status'] = 'processed';
