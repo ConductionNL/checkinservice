@@ -108,7 +108,7 @@ class RequestService
                 $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=>$username])['hydra:member'];
                 if (count($users) > 0 && in_array('group.admin', $users[0]['roles'])) {
                     $person = $this->commonGroundService->getResource($users[0]['person']);
-                    if (isset($person['emails'][0]['email'])){
+                    if (isset($person['emails'][0]['email'])) {
                         $person = $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']]);
                         array_push($results, 'username already exists');
                         array_push($results, $this->sendEmail($webHook, $request, $users[0], 'usernameExists', $person));
@@ -117,7 +117,6 @@ class RequestService
                         array_push($results, 'username already exists');
                         array_push($results, $this->sendEmail($webHook, $request, $users[0], 'usernameExists', $org));
                     }
-
 
                     $requestStatus = ['status'=> 'processed'];
                     // $request = $this->commonGroundService->updateResource($requestStatus, ['component' => 'vrc', 'type' => 'requests', 'id' => $request['id']]);
