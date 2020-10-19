@@ -213,11 +213,11 @@ class RequestService
                     $user = $this->commonGroundService->saveResource($user, ['component' => 'uc', 'type' => 'users']);
                     $acountData['user'] = $user;
                     $user['password'] = $password;
-                    $userData = ['user'=>$user];
+                    $userData = ['user' => $user];
 
                     //Send username & password emails
-                    array_push($results, $this->sendEmail($webHook, $request, $acountData, 'welkom', $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']])));
-                    array_push($results, $this->sendEmail($webHook, $request, $userData, 'password', $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']])));
+                    array_push($results, $this->sendEmail($webHook, $request, $acountData, 'welkom', $organizationContact['emails'][0]['email']));
+                    array_push($results, $this->sendEmail($webHook, $request, $userData, 'password', $organizationContact['emails'][0]['email']));
                 }
 
                 $request['status'] = 'processed';
