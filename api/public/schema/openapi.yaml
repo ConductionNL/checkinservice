@@ -2065,6 +2065,72 @@ paths:
               - asc
               - desc
         -
+          name: 'order[dateCreated]'
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+        -
+          name: 'order[dateModified]'
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+        -
+          name: 'dateCreated[before]'
+          in: query
+          required: false
+          schema:
+            type: string
+        -
+          name: 'dateCreated[strictly_before]'
+          in: query
+          required: false
+          schema:
+            type: string
+        -
+          name: 'dateCreated[after]'
+          in: query
+          required: false
+          schema:
+            type: string
+        -
+          name: 'dateCreated[strictly_after]'
+          in: query
+          required: false
+          schema:
+            type: string
+        -
+          name: 'dateModified[before]'
+          in: query
+          required: false
+          schema:
+            type: string
+        -
+          name: 'dateModified[strictly_before]'
+          in: query
+          required: false
+          schema:
+            type: string
+        -
+          name: 'dateModified[after]'
+          in: query
+          required: false
+          schema:
+            type: string
+        -
+          name: 'dateModified[strictly_after]'
+          in: query
+          required: false
+          schema:
+            type: string
+        -
           name: id
           in: query
           required: false
@@ -2128,6 +2194,30 @@ paths:
               type: string
           style: deepObject
           explode: true
+        -
+          name: dateCreated
+          in: query
+          required: false
+          schema:
+            type: string
+        -
+          name: 'dateCreated[]'
+          in: query
+          required: false
+          schema:
+            type: string
+        -
+          name: dateModified
+          in: query
+          required: false
+          schema:
+            type: string
+        -
+          name: 'dateModified[]'
+          in: query
+          required: false
+          schema:
+            type: string
         -
           name: page
           in: query
@@ -3339,6 +3429,16 @@ components:
           items:
             type: string
           nullable: true
+        dateCreated:
+          description: 'The moment this claim was created'
+          type: string
+          format: date-time
+          nullable: true
+        dateModified:
+          description: 'The moment this claim was last Modified'
+          type: string
+          format: date-time
+          nullable: true
     WebHook-write:
       type: object
       description: ''
@@ -3387,6 +3487,16 @@ components:
           items:
             type: string
           nullable: true
+        dateCreated:
+          description: 'The moment this claim was created'
+          type: string
+          format: date-time
+          nullable: true
+        dateModified:
+          description: 'The moment this claim was last Modified'
+          type: string
+          format: date-time
+          nullable: true
     'WebHook:jsonld-write':
       type: object
       description: ''
@@ -3422,6 +3532,12 @@ definitions:
       result:
         description: 'The url of the message that is stored to the TRC'
         type: array
+      dateCreated:
+        description: 'The moment this claim was created'
+        type: \Datetime
+      dateModified:
+        description: 'The moment this claim was last Modified'
+        type: \Datetime
     required: []
   AuditTrail-read:
     properties:
@@ -3527,12 +3643,12 @@ definitions:
         description: 'The moment this request was created'
         type: string
         format: date-time
-        example: '2020-10-19 10:20:37'
+        example: '2020-10-20 12:25:46'
       dateModified:
         description: 'The moment this request last Modified'
         type: string
         format: date-time
-        example: '2020-10-19 10:20:37'
+        example: '2020-10-20 12:25:46'
     required: []
   AuditTrail-write:
     properties:
@@ -3580,12 +3696,12 @@ definitions:
         description: 'The moment this request was created'
         type: string
         format: date-time
-        example: '2020-10-19 10:20:37'
+        example: '2020-10-20 12:25:46'
       dateModified:
         description: 'The moment this request last Modified'
         type: string
         format: date-time
-        example: '2020-10-19 10:20:37'
+        example: '2020-10-20 12:25:46'
     required: []
   ChangeLog-write:
     properties:
