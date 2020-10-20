@@ -185,7 +185,7 @@ class RequestService
                 $node['accommodation'] = $this->commonGroundService->cleanUrl(['component' => 'lc', 'type' => 'accommodations', 'id' => $accommodation['id']]);
                 $node['organization'] = $this->commonGroundService->cleanUrl(['component' => 'wrc', 'type' => 'organizations', 'id' => $organization['id']]);
                 // If processType = deelname verzoek horeca ondernemer
-                if ($request['processType'] = $this->commonGroundService->cleanUrl(['component' => 'ptc', 'type' => 'process_types', 'id' => 'fdb7186c-0ce9-4050-bd6d-cf83b0c162eb'])) {
+                if ($request['processType'] == $this->commonGroundService->cleanUrl(['component' => 'ptc', 'type' => 'process_types', 'id' => 'fdb7186c-0ce9-4050-bd6d-cf83b0c162eb'])) {
                     $node['methods'] = ['idin'=>true, 'facebook'=>false, 'gmail'=>false];
                 } else {
                     $node['methods'] = ['idin'=>false, 'facebook'=>true, 'gmail'=>true];
