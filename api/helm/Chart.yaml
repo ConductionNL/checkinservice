@@ -5,3 +5,21 @@ name: chis
 version: 0.1.0
 home: chis.zaakonline.nl
 icon: chis.zaakonline.nl
+sources:
+    - https://commonground.conduction.nl/
+    - https://www.commonground.nl/
+keywords:
+    - commonground
+    - haven
+    - nlx
+    - component
+maintainers:
+    - email: ruben@conduction.nl
+      name: Ruben van der Linde
+    - email: info@conduction.nl
+      name: Conduction
+dependencies:
+    - name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 10.1.1
+      condition: postgresql.enabled

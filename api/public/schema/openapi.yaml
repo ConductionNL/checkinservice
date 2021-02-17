@@ -1,10 +1,10 @@
 openapi: 3.0.2
 info:
-  title: 'CheckIn Service'
+  title: ''
   version: V1.0
   description: |
     API Details
-    - Component: CheckIn Service
+    - Component: 
     - Reference: chis
     - Enviroment: dev
     - Version: V1.0
@@ -3643,12 +3643,12 @@ definitions:
         description: 'The moment this request was created'
         type: string
         format: date-time
-        example: '2021-02-16 23:44:05'
+        example: '2021-02-17 18:02:59'
       dateModified:
         description: 'The moment this request last Modified'
         type: string
         format: date-time
-        example: '2021-02-16 23:44:05'
+        example: '2021-02-17 18:02:59'
     required: []
   AuditTrail-write:
     properties:
@@ -3696,12 +3696,12 @@ definitions:
         description: 'The moment this request was created'
         type: string
         format: date-time
-        example: '2021-02-16 23:44:05'
+        example: '2021-02-17 18:02:59'
       dateModified:
         description: 'The moment this request last Modified'
         type: string
         format: date-time
-        example: '2021-02-16 23:44:05'
+        example: '2021-02-17 18:02:59'
     required: []
   ChangeLog-write:
     properties:

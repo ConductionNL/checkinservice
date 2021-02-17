@@ -3,14 +3,14 @@ entries:
   chis:
   - apiVersion: v1
     appVersion: V1.0
-    created: "2021-02-16T23:48:33.7168311Z"
+    created: "2021-02-17T18:01:52.0294341Z"
     description: Naast deze JSON rest API is er ook een [graphql](/graphql) interface
       beschikbaar.
-    digest: 8985ddac010baf6e6f8bb2c1b31f570137a29332b1aabbf4a18426b6f7bc14e6
+    digest: 8b9c3848518ffbcfe4fb5948b51ffd480799baeb1b1689da92af0326d952b67c
     home: chis.zaakonline.nl
     icon: chis.zaakonline.nl
     name: chis
     urls:
     - chis-0.1.0.tgz
     version: 0.1.0
-generated: "2021-02-16T23:48:33.7122377Z"
+generated: "2021-02-17T18:01:52.0210862Z"
