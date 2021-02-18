@@ -8,7 +8,7 @@ entries:
       beschikbaar.
     digest: 8b9c3848518ffbcfe4fb5948b51ffd480799baeb1b1689da92af0326d952b67c
     home: chis.zaakonline.nl
-    icon: chis.zaakonline.nl
+    icon: https://conductionnl.github.io/images/conduction_avatar_blue_on_transparant.svg
     name: chis
     urls:
     - chis-0.1.0.tgz
