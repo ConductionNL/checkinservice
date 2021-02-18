@@ -25,6 +25,32 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Creates a WebHook resources.",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"request\": \"https://vrc.dev.zuid-drecht.nl/requests/92a68dd3-f170-4bf2-a4b0-6cbdb3a8f2e3\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/web_hooks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"web_hooks"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"protocolProfileBehavior": {}
@@ -127,12 +153,12 @@
 	],
 	"variable": [
 		{
-			"id": "6cfe3bf1-a247-42bc-aa27-2a5cdd32971f",
+			"id": "509a1296-fdc1-4c79-a88a-5b973be00fc8",
 			"key": "baseUrl",
-			"value": "https://dev.zuid-drecht.nl/api/v1/chis"
+			"value": "localhost"
 		},
 		{
-			"id": "39cc578b-23a5-43ec-aee8-f9a2c0aa9329",
+			"id": "5fc0e74f-7c45-4007-86cd-a94d1ff3aa4b",
 			"key": "authorization",
 			"value": "45c1a4b6-59d3-4a6e-86bf-88a872f35845"
 		}
