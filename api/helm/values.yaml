@@ -11,8 +11,8 @@ settings:
   repro: https://github.com/ConductionNL/checkinservice
   demo: chis.zuid-drecht.nl
   domain: zuid-drecht.nl
-  subdomain: chis
-  subpath: chis
+  subdomain: checkinservice
+  subpath: checkinservice
   subpathRouting: true
   env: dev
   web: false
