@@ -1,6 +1,6 @@
 publiccodeYmlVersion: "0.2"
 
-name: chis
+name: checkinservice
 applicationSuite: commonground
 url: "https://github.com/ConductionNL/checkinservice"
 landingURL: "chis.zuid-drecht.nl"
